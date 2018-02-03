@@ -1,5 +1,5 @@
 # PROF2FITS
-## Sample program which converts PROFS to FITS
+## program which converts PROFS to FITS
 
 
 
@@ -12,7 +12,7 @@ The only way to use that functionality of boost right now is to run
 
 `sudo apt-get install libboost-all-dev` . 
 
-*We want this program to stand alone*
+*We want this program to be stand alone, and have no dependencies for which `apt-get` has to be used.*
 
 `Makefile` has been crafted which installs `prf2fits`, `cfgen` and sets up the `cfitsio` dependencies on its own. 
 
