@@ -4,3 +4,5 @@
 *.status
 cfgen
 prf2fits
+testio
+testgen

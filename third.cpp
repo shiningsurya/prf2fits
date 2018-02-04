@@ -39,7 +39,7 @@ int main(int argc, char * argv[]){
 		 )
 		;
 		po::positional_options_description p;
-		p.add("input",-1);
+		p.add("input,i",-1);
 		po::store(po::command_line_parser(argc,argv).options(desc).positional(p).run(), vm);
 		// argument parsing is done..
 		if(vm.count("help") || argc < 2) {
@@ -54,9 +54,14 @@ int main(int argc, char * argv[]){
 				cout << "Suryrao Bethapudi\n";
 				return true;
 		}
+		if(!vm.count("input")) {
+				cerr << "No input file given\n";
+				cerr << "Exiting...\n";
+				return false;
+		}
 		po::notify(vm); // only raises any errors encountered. 
 		// Creating a FITS file
-		FITS myfits(input, pulsar, observatory, project, scan);
+		FITS myfits(vm["input"].as<string>(), pulsar, observatory, project, scan);
 		// Now, I will show you a magic
 		/***********************************
 		 * This magic is called OOP trick.
@@ -67,7 +72,7 @@ int main(int argc, char * argv[]){
 		 * *********************************/
 		try{
 				myfits.sanityCheck();
-		} catch(string key) {
+		} catch(const char * key) {
 				cerr << "Key " << key << " not found to be consistent...\n";
 				cerr << "Please fix it\n";
 				return false;

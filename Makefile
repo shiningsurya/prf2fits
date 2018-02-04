@@ -15,7 +15,7 @@ cfgen : testgenerator.cpp
 		$(CC) $? $(CPPINC) $(CPPFLAGS) $(LDFLAGS) -o $@
 
 clean :
-	-rm -f testio testgen prf2fits 
+	-rm -f testio testgen prf2fits cfgen 
 
 prf2fits : third.cpp 
 	$(CC) $? $(CPPINC) $(CPPFLAGS) $(LDFLAGS) -lboost_program_options -o $@

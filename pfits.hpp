@@ -7,13 +7,12 @@ class PROFIO {
 		private:
 				FILE * file;
 				int numbins, numchans;
-				
+				struct fromHeader * fh;
 		public:
 				bool MoreThere(){
-						// return true if there is more to read in the file
+						// return true if EOF is reached in file 
 						return feof(file);
 				}
-				struct fromHeader * fh;
 				PROFIO(){
 						file = NULL;
 						fh = (struct fromHeader*)malloc(sizeof(struct fromHeader));
@@ -21,6 +20,7 @@ class PROFIO {
 				PROFIO(string fn,int nb, int nc){
 						file = fopen(fn.c_str(),"r");
 						if(file == NULL) cerr << "PROFIO unable to open file " << fn << endl;
+						fh = (struct fromHeader*)malloc(sizeof(struct fromHeader));
 						numbins = nb;
 						numchans = nc;
 				}
@@ -29,10 +29,9 @@ class PROFIO {
 						if(fh != NULL)  free(fh);
 				}
 				int readHeader(){
-						if(!MoreThere()) return 1;
+						if(MoreThere()) return 1;
 						if(fh == NULL) cerr << "Malloc failed while reading header\n";
-						fscanf(file,"# %lf %lf %lf %ld %f %f %d %c %d \n",&(fh->mjd),&(fh->fract),&(fh->period),&(fh->numpulses),
-										&(fh->freq),&(fh->dm),&(fh->numbins),&(fh->tid),&(fh->pol));
+						fscanf(file,"# %lf %lf %lf %ld %f %f %d %c %d \n",&(fh->mjd),&(fh->fract),&(fh->period),&(fh->numpulses),&(fh->freq),&(fh->dm),&(fh->numbins),&(fh->tid),&(fh->pol));
 						if(fh->numbins != numbins) {
 								cerr << "Numbins from Header doesn't agree with user input\nFatal Error\nExiting...";
 								exit(1);
@@ -62,16 +61,16 @@ class PROFIO {
 						file = fopen(fn.c_str(),"r");
 						if(file == NULL) cerr << "PROFIO unable to open file " << fn << endl;
 				}
-				double getmjd()      { return fh->mjd; }
-				double getfract()    { return fh->fract; }
-				double getperiod()   { return fh->period; }
-				long   getnumpul()   { return fh->numpulses; }
-				float  getfreq()     { return fh->freq; }
-				float  getdm()       { return fh->dm; }
-				int    getnumbins()  { return fh->numbins; }
-				int    getnumchans() { return fh->numchans; }
-				char   gettid()      { return fh->tid; }
-				int    getpol()      { return fh->pol; }
+				double getmjd()      { double x = fh->mjd;         return x; }
+				double getfract()    { double x = fh->fract;       return x; }
+				double getperiod()   { double x = fh->period;      return x; }
+				long   getnumpul()   { long   x = fh->numpulses;   return x; }
+				float  getfreq()     { float  x = fh->freq;        return x; }
+				float  getdm()       { float  x = fh->dm;          return x; }
+				int    getnumbins()  { int    x = fh->numbins;     return x; }
+				int    getnumchans() { int    x = numchans;        return x; }
+				char   gettid()      { char   x = fh->tid;         return x; }
+				int    getpol()      { int    x = fh->pol;         return x; }
 };
 
 class FITS {
@@ -85,7 +84,7 @@ class FITS {
 				float fval;
 				int ival;
 				long lval;
-				char * cpval, *date_time;
+				char * cpval, date_time[24];
 				// The debugging function
 				void ReportAndExitOnError(int status){
 						if(status) {
@@ -101,24 +100,29 @@ class FITS {
 						Observatory.LoadFile(observatory);
 						Project.LoadFile(project);
 						ReadThis = new PROFIO(prof, stoi(Scan["NUMBINS"]), stoi(Scan["NUMCHANS"]));
-						ReadThis->readHeader(); // This is to be the first call.
+						if(  ReadThis->readHeader() ) {
+								cerr << "Unable to read Header\n";
+						}; // This is to be the first call.
 						configDone = true;
 						fits_get_system_time( date_time, &ival, &status);
 				}
 				~FITS() {
 						delete ReadThis;
 				}
-				int sanityCheck() throw (string) {
+				int sanityCheck() throw (const char *) {
 						/*
 						 *So, we can't be sure that user inputs through cfg files 
 						 *and prof headers agree. 
 						 *This method does that and throws any exceptions found. 
+						 * Note about numchans. 
+						 * NUMCHANS is not included in the header. 
 						 */
-						if(stoi(Scan["NUMBINS"])    != ReadThis->getnumbins()) throw("NUMBINS");
-						if(stoi(Scan["NUMCHANS"])   != ReadThis->getnumchans()) throw("NUMCHANS");
-						if(stoi(Scan["NPOL"])       != ReadThis->getpol()) throw("NPOL");
-						//if(stoi(Pulsar["CHAN_DM"])  != ReadThis->getdm()) throw("CHAN_DM");
-						if(stoi(Project["OBSFREQ"]) != ReadThis->getfreq()) throw("OBSFREQ");
+						if(stoi(Scan["NUMBINS"])    != ReadThis->getnumbins()) throw "NUMBINS";
+						//if(stoi(Scan["NUMCHANS"])   != ReadThis->getnumchans()) throw "NUMCHANS";
+						if(stoi(Scan["NPOL"])       != ReadThis->getpol()) throw "NPOL";
+						// NRCVR should also be equal to NPOL
+						//if(stoi(Pulsar["CHAN_DM"])  != ReadThis->getdm()) throw "CHAN_DM";
+						//if(stof(Project["OBSFREQ"]) != ReadThis->getfreq()) throw "OBSFREQ";
 						/*
 						 * The idea is to keep rvalue as the things we get from the header.
 						 * In the main body, I will catch these exceptions and then notify the user about 
@@ -316,10 +320,10 @@ class FITS {
 						dval = stod(Project["OBSFREQ"]);
 						fits_write_col( fits, TDOUBLE, 8, 1, 1, 1, &dval, &status );
 						/* Number of channels */
-						ival = stoi(Project["NUMCHANS"]);
+						ival = stoi(Scan["NUMCHANS"]);
 						fits_write_col( fits, TSHORT, 9, 1, 1, 1, &ival, &status );
 						/* Channel bandwidth */
-						dval = - (double) stod(Project["OBSBW"]) / stoi(Project["NUMCHANS"]);
+						dval = - (double) stod(Project["OBSBW"]) / stoi(Scan["NUMCHANS"]);
 						// printf("Channel Bandwidth %lf\n", dx);
 						fits_write_col( fits, TDOUBLE, 10, 1, 1, 1, &dval, &status );
 						ival = 0;
@@ -500,7 +504,7 @@ class FITS {
 						float *binned_weight, *binned_offset, *binned_scale;
 						float *binned_freq;
 						float * subs;
-						while(!ReadThis->MoreThere()){
+						while(ReadThis->MoreThere()){
 								/*
 								 *There is a major assumption happening here.
 								 *It is assumed that First Header of the prof has been read. 

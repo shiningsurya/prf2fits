@@ -129,8 +129,9 @@ class Pulsar : public AbstractIO {
 						 */
 						insert("COORD_MD","J2000");
 						insert("EQUINOX","2000.0");
-						insert("RA","00:00:00.0000");
-						insert("DEC","-00:00:00.000");
+						insert("RM","0.0");
+						insert("RA","21:45:50.460593");
+						insert("DEC","-07:50:18.4876");
 						filename = "pulsar.cfg";
 				}
 };
@@ -153,9 +154,9 @@ class Observatory : public AbstractIO {
 						insert("ANT_X","1656446.9142");
 						insert("ANT_Y","5798313.9493");
 						insert("ANT_Z","2073374.9814");
-						insert("FRONTEND","30 Antenna Interferometer");
+						insert("FRONTEND","30_Antenna_Interferometer");
 						insert("IBEAM","1");
-						insert("NRCVR","");
+						insert("NRCVR","1");
 						insert("FD_POLN","LIN");
 						insert("FD_HAND","1");
 						insert("FD_SANG","0.0");
@@ -197,7 +198,6 @@ class Project : public AbstractIO {
 						insert("CAL_DCYC","1.0");						
 						insert("CAL_PHS","0.0");						
 						insert("CAL_NPHS","0.");						
-						insert("STT_LST","12345");	
 						filename = "project.cfg";
 				}
 
@@ -232,9 +232,14 @@ class Scan : public AbstractIO {
 						insert("STT_IMJD","57375");						
 						insert("STT_SMJD","7345");						
 						insert("STT_OFFS","234535");
-						insert("NPOL","2");	
+						insert("STT_LST","12345");	
+						insert("NPOL","1");	
 						insert("NUMBINS","64");
+						insert("NBITS","64");
 						insert("NUMCHANS","1024");
+						insert("NCHNOFFS","0.0");
+						insert("NSBLK","1");
+						insert("NSTOT","1");
 						filename = "scan.cfg";
 				}
 
