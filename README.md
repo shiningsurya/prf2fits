@@ -1,5 +1,5 @@
 # PROF2FITS
-## program which converts PROFS to FITS
+## Program which converts PROFS to FITS
 
 
 
@@ -25,6 +25,16 @@ Following is a simple illustration of installing these programs:
 `git clone https://github.com/shiningsurya/prf2fits.git`
 
 `make install`
+
+
+### Note
+
+`CFITSIO` is a library built for FITS file IO in C, hence the name. Consequently, there are a lot warnings such as 
+
+`warning ; ISO C++ forbids converting a string constant to 'char*' [-Wwrite-strings]`
+
+Hence, even though it is against the standard practises, we suppress the warnings by passing `-Wwrite-strings`.
+Check out the criticism in [StackOverflow](https://stackoverflow.com/questions/8356223/assign-a-string-literal-to-a-char).
 
 
 ### Documentation

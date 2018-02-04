@@ -2,8 +2,9 @@
 # PRF2FITS
 SHELL := /bin/bash
 CC =  g++
-CPPINC   = -Icfitsio/include 
-CPPFLAGS = -std=c++11
+CPPINC   = -Icfitsio/include -I. 
+CPPFLAGS = -std=c++11 -fpermissive -w # Shamelessly suppressing all the warnings so that
+								      # compilaton is quiet 
 LDFLAGS  = -Lcfitsio/lib -lcfitsio 
 PWD     := $(shell pwd)
 
@@ -17,7 +18,7 @@ clean :
 	-rm -f testio testgen prf2fits 
 
 prf2fits : third.cpp 
-	$(CC) $? $(CPPINC) $(CPPFLAGS) $(LDFLAGS) -o $@
+	$(CC) $? $(CPPINC) $(CPPFLAGS) $(LDFLAGS) -lboost_program_options -o $@
 
 all: prf2fits cfgen
 	$(CC) $? $(CPPINC) $(CPPFLAGS) $(LDFLAGS) -o $@

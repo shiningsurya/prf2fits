@@ -80,7 +80,6 @@ class AbstractIO{
 
 class Pulsar : public AbstractIO {
 		private:
-				vector<string> param;
 		public:
 				Pulsar() {
 						/*
