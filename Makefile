@@ -16,7 +16,7 @@ cfgen : testgenerator.cpp
 clean :
 	-rm -f testio testgen prf2fits 
 
-prf2fits : prf2fits.cpp 
+prf2fits : third.cpp 
 	$(CC) $? $(CPPINC) $(CPPFLAGS) $(LDFLAGS) -o $@
 
 all: prf2fits cfgen

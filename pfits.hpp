@@ -14,7 +14,7 @@ class PROFIO {
 						// return true if there is more to read in the file
 						return feof(file);
 				}
-				struct fromheader * fh;
+				struct fromHeader * fh;
 				PROFIO(){
 						file = NULL;
 						subs = NULL;
@@ -35,7 +35,7 @@ class PROFIO {
 				int readHeader(){
 						if(!MoreThere()) return 1;
 						if(fh == NULL) cerr << "Malloc failed while reading header\n";
-						fscanf(file,"# %lf %lf %lf %ld %f %f %d %c %d \n",&(ret->mjd),&(fh->fract),&(fh->period),&(fh->numpulses),
+						fscanf(file,"# %lf %lf %lf %ld %f %f %d %c %d \n",&(fh->mjd),&(fh->fract),&(fh->period),&(fh->numpulses),
 										&(fh->freq),&(fh->dm),&(fh->numbins),&(fh->tid),&(fh->pol));
 						if(fh->numbins != numbins) {
 								cerr << "Numbins from Header doesn't agree with user input\nFatal Error\nExiting...";
@@ -69,7 +69,7 @@ class PROFIO {
 				long   getnumpul()   { return fh->numpulses; }
 				float  getfreq()     { return fh->freq; }
 				float  getdm()       { return fh->dm; }
-				int    getnumbins()  { return fh->getnumbins; }
+				int    getnumbins()  { return numbins; }
 				int    getnumchans() { return numchans; }
 				char   gettid()      { return fh->tid; }
 				int    getpol()      { return fh->pol; }
@@ -102,7 +102,7 @@ class FITS {
 						Scan.LoadFile(scan);
 						Observatory.LoadFile(observatory);
 						Project.LoadFile(project);
-						ReadThis = new PROFIO(prof, Pulsar["NUMBINS"], Scan["NUMCHANS"]);
+						ReadThis = new PROFIO(prof, stoi(Pulsar["NUMBINS"]), stoi(Scan["NUMCHANS"]));
 						configDone = true;
 						fits_get_system_time( date_time, &ival, &status);
 				}
@@ -130,7 +130,7 @@ class FITS {
 						Observatory.LoadFile(observatory);
 						Scan.LoadFile(scan);
 						Project.LoadFile(project);
-						ReadThis.LoadFile(prof);
+						ReadThis->LoadFile(prof);
 						configDone = true;
 				}
 				int closeFITS() { fits_close_file(fits, &status); ReportAndExitOnError(status); return status;}
@@ -185,7 +185,7 @@ class FITS {
 						ival = stoi(Project["OBSNCHAN"]);
 						fits_update_key(fits, TINT, "OBSNCHAN", &ival, "Number of frequency channels (original) ",&status);
 						fval = stof(Pulsar["CHAN_DM"]);
-						fits_update_key(fits, TFLOAT, "CHAN_DM", &(ph->dm), "[cm-3 pc] DM used for on-line dedispersion ",&status);
+						fits_update_key(fits, TFLOAT, "CHAN_DM", &fval, "[cm-3 pc] DM used for on-line dedispersion ",&status);
 						cpval = (char*)Scan["PNT_ID"].c_str();
 						fits_update_key(fits, TSTRING, "PNT_ID", cpval, "Name or ID for pointing ctr (multibeam feeds) ", &status);
 						cpval = (char*)Scan["SRC_NAME"].c_str();
@@ -199,20 +199,26 @@ class FITS {
 						cpval = (char*)Pulsar["DEC"].c_str();
 						fits_update_key(fits, TSTRING, "DEC", cpval, "Declination (-dd:mm:ss.sss) ", &status);
 						// START - Don't know where to take these from 
-						fits_update_key(fits, TFLOAT, "BMAJ", &(ph->bmaj), "[deg] Beam major axis length ", &status);
-						fits_update_key(fits, TFLOAT, "BMIN", &(ph->bmin), "[deg] Beam minor axis length ", &status);
-						fits_update_key(fits, TFLOAT, "BPA", &(ph->bpa), "[deg] Beam position angle ", &status);
-						fits_update_key(fits, TSTRING, "STT_CRD1", ph->start_coord1, "Start coord 1 (hh:mm:ss.sss or ddd.ddd) ",&status);
-						fits_update_key(fits, TSTRING, "STT_CRD2", ph->start_coord2, "Start coord 2 (hh:mm:ss.sss or ddd.ddd) ",&status);
-						fits_update_key(fits, TSTRING, "TRK_MODE", ph->tmode, "Track mode (TRACK, SCANGC, SCANLAT) ",&status);
-						fits_update_key(fits, TSTRING, "STP_CRD1", ph->stop_coord1, "Stop coord 1 (hh:mm:ss.sss or ddd.ddd) ",&status);
-						fits_update_key(fits, TSTRING, "STP_CRD2", ph->stop_coord2, "Stop coord 2 (hh:mm:ss.sss or ddd.ddd) ",&status);
+						/*
+						 *fits_update_key(fits, TFLOAT, "BMAJ", &(ph->bmaj), "[deg] Beam major axis length ", &status);
+						 *fits_update_key(fits, TFLOAT, "BMIN", &(ph->bmin), "[deg] Beam minor axis length ", &status);
+						 *fits_update_key(fits, TFLOAT, "BPA", &(ph->bpa), "[deg] Beam position angle ", &status);
+						 *fits_update_key(fits, TSTRING, "STT_CRD1", ph->start_coord1, "Start coord 1 (hh:mm:ss.sss or ddd.ddd) ",&status);
+						 *fits_update_key(fits, TSTRING, "STT_CRD2", ph->start_coord2, "Start coord 2 (hh:mm:ss.sss or ddd.ddd) ",&status);
+						 *fits_update_key(fits, TSTRING, "TRK_MODE", ph->tmode, "Track mode (TRACK, SCANGC, SCANLAT) ",&status);
+						 *fits_update_key(fits, TSTRING, "STP_CRD1", ph->stop_coord1, "Stop coord 1 (hh:mm:ss.sss or ddd.ddd) ",&status);
+						 */
+						/*
+						 *fits_update_key(fits, TSTRING, "STP_CRD2", ph->stop_coord2, "Stop coord 2 (hh:mm:ss.sss or ddd.ddd) ",&status);
+						 */
 						// END
 						dval = stod(Scan["SCANLEN"]);
 						fits_update_key(fits, TDOUBLE, "SCANLEN", &dval, "[s] Requested scan length (E) ",&status);
-						// START - Don't know where to take these from 
-						fits_update_key(fits, TSTRING, "FD_MODE", ph->fdmode, "Feed track mode - FA, CPA, SPA, TPA ",&status);
-						fits_update_key(fits, TFLOAT, "FA_REQ", &(ph->fareq), "[deg] Feed/Posn angle requested (E) ",&status);
+						// START - Don't know where to take these from
+						cpval =  (char*)Observatory["FD_MODE"].c_str();
+						fits_update_key(fits, TSTRING, "FD_MODE", cpval, "Feed track mode - FA, CPA, SPA, TPA ",&status);
+						fval = stof(Observatory["FD_REQ"]);
+						fits_update_key(fits, TFLOAT, "FA_REQ", &fval, "[deg] Feed/Posn angle requested (E) ",&status);
 						// END
 						cpval = (char*)Project["CAL_MODE"].c_str();
 						fits_update_key(fits, TSTRING, "CAL_MODE", cpval, "Cal mode (OFF, SYNC, EXT1, EXT2) ",&status);
@@ -271,7 +277,7 @@ class FITS {
 						fits_write_col( fits, TSTRING, 3, 1, 1, 1, &cpval, &status );
 						/* Nr of pols*/
 						ival = ReadThis->getpol();
-						fits_write_col( fits, TSHORT, 4, 1, 1, 1, &eival, &status );
+						fits_write_col( fits, TSHORT, 4, 1, 1, 1, &ival, &status );
 						/* Nr of bins per product (0 for SEARCH mode) */
 						ival = ReadThis->getnumbins();
 						fits_write_col( fits, TSHORT, 5, 1, 1, 1, &ival, &status );
@@ -290,7 +296,7 @@ class FITS {
 						ival = stoi(Project["NUMCHANS"]);
 						fits_write_col( fits, TSHORT, 9, 1, 1, 1, &ival, &status );
 						/* Channel bandwidth */
-						dval = - (double) stod(Project["OBSBW"] / stoi(Project["NUMCHANS"]);
+						dval = - (double) stod(Project["OBSBW"]) / stoi(Project["NUMCHANS"]);
 						// printf("Channel Bandwidth %lf\n", dx);
 						fits_write_col( fits, TDOUBLE, 10, 1, 1, 1, &dval, &status );
 						ival = 0;
@@ -451,13 +457,12 @@ class FITS {
 						fval = (float) ReadThis->getdm();
 						fits_update_key(fits, TFLOAT, "DM", &fval, "[cm-3 pc] DM for post-detection dedisperion ", &status);
 					    // TODO	
-						x = 0.0;
-						fits_update_key(fits, TFLOAT, "RM", &x, "[rad m-2] RM for post-detection deFaraday", &status);
-						x = 0.0; // TODO
-						fits_update_key(fits, TFLOAT, "NCHNOFFS", &x, "Channel/sub-band offset for split files ", &status);
-						k = 1; // TODO Search mode
-						fits_update_key(fits, TINT, "NSBLK", &k, "Samples/row (SEARCH mode, else 1)", &status);
-						fits_update_key(fits, TINT, "NSTOT", &k, "Total number of samples (SEARCH mode, else 1) ", &status);
+						fval = 0.0;
+						fits_update_key(fits, TFLOAT, "RM", &fval, "[rad m-2] RM for post-detection deFaraday", &status);
+						fits_update_key(fits, TFLOAT, "NCHNOFFS", &fval, "Channel/sub-band offset for split files ", &status);
+						ival = 1; // TODO Search mode
+						fits_update_key(fits, TINT, "NSBLK", &ival, "Samples/row (SEARCH mode, else 1)", &status);
+						fits_update_key(fits, TINT, "NSTOT", &ival, "Total number of samples (SEARCH mode, else 1) ", &status);
 						reportAndExitOnFITSerror(status);
 						// Now focusing on writing the subintegration data.
 						// Declaring stuff here
@@ -503,8 +508,8 @@ class FITS {
 								fits_write_col( fits, TINT, col, subint_cnt, 1, 1, &subint_cnt, &status );
 								col++;
 								/* INDEXVAL - Optionally used if INT_TYPE != TIME */
-								dx = 0.0;
-								fits_write_col( fits, TDOUBLE, col, subint_cnt, 1, 1, &dx, &status );
+								dval = 0.0;
+								fits_write_col( fits, TDOUBLE, col, subint_cnt, 1, 1, &dval, &status );
 								col++;
 								/* [s] Length of subint ALAKAZAM */
 								dval = (double) ReadThis->getperiod() * (double) ReadThis->getnumpul();
@@ -601,7 +606,7 @@ class FITS {
 								// dc = sum_subint_az_cos / sum_subint_len_secs;
 								// if( ( dx = ( atan2( ds, dc ) / TwoPi ) ) < 0.0 ) dx += 1.0;
 								// dx = 360.0;
-								x = (float) dx;
+								fval = (float) dval;
 								fits_write_col( fits, TFLOAT, col, subint_cnt, 1, 1, &fval, &status );
 								col++;
 
@@ -649,14 +654,10 @@ class FITS {
 								 *free(subs);
 								 */
 								ReadThis->readHeader(); // ensure fh->numChan is loaded
-								dflag++;
+								//dflag++;
 								/* Finished SUBINT */
 						}
 						reportAndExitOnFITSerror(status);
+						return status;
 				}
-				return status;
-}
-
-
-
 };
