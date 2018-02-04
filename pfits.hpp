@@ -9,7 +9,6 @@ class PROFIO {
 				int numbins, numchans;
 				
 		public:
-				float * subs;
 				bool MoreThere(){
 						// return true if there is more to read in the file
 						return feof(file);
@@ -17,7 +16,6 @@ class PROFIO {
 				struct fromHeader * fh;
 				PROFIO(){
 						file = NULL;
-						subs = NULL;
 						fh = (struct fromHeader*)malloc(sizeof(struct fromHeader));
 				}
 				PROFIO(string fn,int nb, int nc){
@@ -25,12 +23,10 @@ class PROFIO {
 						if(file == NULL) cerr << "PROFIO unable to open file " << fn << endl;
 						numbins = nb;
 						numchans = nc;
-						subs = (float*)malloc(numbins*numchans*sizeof(float));
 				}
 				~PROFIO(){
 						fclose(file);
 						if(fh != NULL)  free(fh);
-						if(subs != NULL) free(subs);
 				}
 				int readHeader(){
 						if(!MoreThere()) return 1;
@@ -47,14 +43,17 @@ class PROFIO {
 				void isubs(int nb, int nc){
 						numbins = nb;
 						numchans = nc;				// ret is not initialized
-						subs = (float*)malloc(numbins*numchans*sizeof(float));
 				}
-				void readSubs() {
-						// eating loop
-						// Column-major yum yum 
+				void readSubs(float * subway) {
+						/*
+						 * As of now, the idea is to allocate memory in the main class FITS. 
+						 * Here, just reading is planned to take place.
+						 * eating loop
+						 * Column-major yum yum 
+						 */
 						for(int b = 0; b < numbins;b++){
 								for(int c = 0; c < numchans ; c++){
-										fscanf(file," %f",&subs[c*numbins + b]);
+										fscanf(file," %f",&subway[c*numbins + b]);
 								}
 						}
 				}
@@ -69,11 +68,10 @@ class PROFIO {
 				long   getnumpul()   { return fh->numpulses; }
 				float  getfreq()     { return fh->freq; }
 				float  getdm()       { return fh->dm; }
-				int    getnumbins()  { return numbins; }
-				int    getnumchans() { return numchans; }
+				int    getnumbins()  { return fh->numbins; }
+				int    getnumchans() { return fh->numchans; }
 				char   gettid()      { return fh->tid; }
 				int    getpol()      { return fh->pol; }
-				float* getsubs()     { return subs; }
 };
 
 class FITS {
@@ -102,13 +100,34 @@ class FITS {
 						Scan.LoadFile(scan);
 						Observatory.LoadFile(observatory);
 						Project.LoadFile(project);
-						ReadThis = new PROFIO(prof, stoi(Pulsar["NUMBINS"]), stoi(Scan["NUMCHANS"]));
+						ReadThis = new PROFIO(prof, stoi(Scan["NUMBINS"]), stoi(Scan["NUMCHANS"]));
+						ReadThis->readHeader(); // This is to be the first call.
 						configDone = true;
 						fits_get_system_time( date_time, &ival, &status);
 				}
 				~FITS() {
 						delete ReadThis;
 				}
+				int sanityCheck() throw (string) {
+						/*
+						 *So, we can't be sure that user inputs through cfg files 
+						 *and prof headers agree. 
+						 *This method does that and throws any exceptions found. 
+						 */
+						if(stoi(Scan["NUMBINS"])    != ReadThis->getnumbins()) throw("NUMBINS");
+						if(stoi(Scan["NUMCHANS"])   != ReadThis->getnumchans()) throw("NUMCHANS");
+						if(stoi(Scan["NPOL"])       != ReadThis->getpol()) throw("NPOL");
+						//if(stoi(Pulsar["CHAN_DM"])  != ReadThis->getdm()) throw("CHAN_DM");
+						if(stoi(Project["OBSFREQ"]) != ReadThis->getfreq()) throw("OBSFREQ");
+						/*
+						 * The idea is to keep rvalue as the things we get from the header.
+						 * In the main body, I will catch these exceptions and then notify the user about 
+						 * these inconsistencies and then update the IOer objects. 
+						 * *************************************************************
+						 * I hold the ReadThis sacred and will not change anything there. 
+						 */
+						return 0;
+				} 
 				int createFITS(const char * filename){
 						status = 0;
 						int bitpix = 8;
@@ -138,9 +157,9 @@ class FITS {
 						if(!configDone) { cerr << "Configuration not done..\n"; return -1;}
 						cpval = (char*)Project["OBSERVER"].c_str();
 						fits_update_key(fits, TSTRING, "OBSERVER", cpval,"Observer name(s)", &status);
-						cpval = (char*)Project["PROJECT"].c_str();
+						cpval = (char*)Project["PROJID"].c_str();
 						fits_update_key(fits, TSTRING, "PROJID", cpval,"Project name", &status);
-						cpval = (char*)Project["TELESCOPE"].c_str();
+						cpval = (char*)Observatory["TELESCOP"].c_str();
 						fits_update_key(fits, TSTRING, "TELESCOP", cpval,"Telescope name", &status);
 						dval = stod(Observatory["ANT_X"]);
 						fits_update_key(fits, TDOUBLE, "ANT_X", &dval,"[m] Antenna ITRF X-coordinate (D)", &status);
@@ -184,7 +203,7 @@ class FITS {
 						fits_update_key(fits, TDOUBLE, "OBSBW", &dval, "[MHz] Bandwidth for observation ",&status);
 						ival = stoi(Project["OBSNCHAN"]);
 						fits_update_key(fits, TINT, "OBSNCHAN", &ival, "Number of frequency channels (original) ",&status);
-						fval = stof(Pulsar["CHAN_DM"]);
+						fval = (float)ReadThis->getdm();
 						fits_update_key(fits, TFLOAT, "CHAN_DM", &fval, "[cm-3 pc] DM used for on-line dedispersion ",&status);
 						cpval = (char*)Scan["PNT_ID"].c_str();
 						fits_update_key(fits, TSTRING, "PNT_ID", cpval, "Name or ID for pointing ctr (multibeam feeds) ", &status);
@@ -199,25 +218,29 @@ class FITS {
 						cpval = (char*)Pulsar["DEC"].c_str();
 						fits_update_key(fits, TSTRING, "DEC", cpval, "Declination (-dd:mm:ss.sss) ", &status);
 						// START - Don't know where to take these from 
-						/*
-						 *fits_update_key(fits, TFLOAT, "BMAJ", &(ph->bmaj), "[deg] Beam major axis length ", &status);
-						 *fits_update_key(fits, TFLOAT, "BMIN", &(ph->bmin), "[deg] Beam minor axis length ", &status);
-						 *fits_update_key(fits, TFLOAT, "BPA", &(ph->bpa), "[deg] Beam position angle ", &status);
-						 *fits_update_key(fits, TSTRING, "STT_CRD1", ph->start_coord1, "Start coord 1 (hh:mm:ss.sss or ddd.ddd) ",&status);
-						 *fits_update_key(fits, TSTRING, "STT_CRD2", ph->start_coord2, "Start coord 2 (hh:mm:ss.sss or ddd.ddd) ",&status);
-						 *fits_update_key(fits, TSTRING, "TRK_MODE", ph->tmode, "Track mode (TRACK, SCANGC, SCANLAT) ",&status);
-						 *fits_update_key(fits, TSTRING, "STP_CRD1", ph->stop_coord1, "Stop coord 1 (hh:mm:ss.sss or ddd.ddd) ",&status);
-						 */
-						/*
-						 *fits_update_key(fits, TSTRING, "STP_CRD2", ph->stop_coord2, "Stop coord 2 (hh:mm:ss.sss or ddd.ddd) ",&status);
-						 */
+						fval = stof(Scan["BMAJ"]);
+						fits_update_key(fits, TFLOAT, "BMAJ", &fval, "[deg] Beam major axis length ", &status);
+						fval = stof(Scan["BMIN"]);
+						fits_update_key(fits, TFLOAT, "BMIN", &fval, "[deg] Beam minor axis length ", &status);
+						fval = stof(Scan["BPA"]);
+						fits_update_key(fits, TFLOAT, "BPA", &fval, "[deg] Beam position angle ", &status);
+						cpval = (char*)Scan["STT_CRD1"].c_str();
+						fits_update_key(fits, TSTRING, "STT_CRD1", cpval, "Start coord 1 (hh:mm:ss.sss or ddd.ddd) ",&status);
+						cpval = (char*)Scan["STT_CRD2"].c_str();
+						fits_update_key(fits, TSTRING, "STT_CRD2", cpval, "Start coord 2 (hh:mm:ss.sss or ddd.ddd) ",&status);
+						cpval = (char*)Scan["TRK_MODE"].c_str();
+						fits_update_key(fits, TSTRING, "TRK_MODE", cpval, "Track mode (TRACK, SCANGC, SCANLAT) ",&status);
+						cpval = (char*)Scan["STP_CRD1"].c_str();
+						fits_update_key(fits, TSTRING, "STP_CRD1", cpval , "Stop coord 1 (hh:mm:ss.sss or ddd.ddd) ",&status);
+						cpval = (char*)Scan["STP_CRD2"].c_str();
+						fits_update_key(fits, TSTRING, "STP_CRD2", cpval , "Stop coord 2 (hh:mm:ss.sss or ddd.ddd) ",&status);
 						// END
 						dval = stod(Scan["SCANLEN"]);
 						fits_update_key(fits, TDOUBLE, "SCANLEN", &dval, "[s] Requested scan length (E) ",&status);
 						// START - Don't know where to take these from
-						cpval =  (char*)Observatory["FD_MODE"].c_str();
+						cpval =  (char*)Scan["FD_MODE"].c_str();
 						fits_update_key(fits, TSTRING, "FD_MODE", cpval, "Feed track mode - FA, CPA, SPA, TPA ",&status);
-						fval = stof(Observatory["FD_REQ"]);
+						fval = stof(Scan["FD_REQ"]);
 						fits_update_key(fits, TFLOAT, "FA_REQ", &fval, "[deg] Feed/Posn angle requested (E) ",&status);
 						// END
 						cpval = (char*)Project["CAL_MODE"].c_str();
@@ -267,16 +290,16 @@ class FITS {
 						};
 						fits_create_tbl( fits, BINARY_TBL, nrows, ncols, PHtype, PHform, PHunit, "HISTORY", &status);
 						/* Processing date and time (YYYY-MM-DDThh:mm:ss UTC) */
-						cpval = date_time; // I called it in object constructor. 
+						fits_get_system_time(date_time, &ival, &status);
 						fits_write_col( fits, TSTRING, 1, 1, 1, 1, &cpval, &status );
 						/* Processing program and command */
-						cpval = "WBCORR";
+						cpval = (char*)Observatory["PROC_CMD"].c_str();
 						fits_write_col( fits, TSTRING, 2, 1, 1, 1, &cpval, &status );
 						/* Polarisation identifier */
-						cpval = "AA";
+						cpval = (char*)Observatory["POL_TYPE"].c_str();
 						fits_write_col( fits, TSTRING, 3, 1, 1, 1, &cpval, &status );
 						/* Nr of pols*/
-						ival = ReadThis->getpol();
+						ival = stoi(Scan["NPOL"]);
 						fits_write_col( fits, TSHORT, 4, 1, 1, 1, &ival, &status );
 						/* Nr of bins per product (0 for SEARCH mode) */
 						ival = ReadThis->getnumbins();
@@ -308,19 +331,20 @@ class FITS {
 						ival = 1;
 						fits_write_col( fits, TSHORT, 13, 1, 1, 1, &ival, &status );
 						/* Dedispersion method */
-						cpval = "SIGPROC";
+						cpval = (char*)Observatory["DDS_MTHD"].c_str();
 						fits_write_col( fits, TSTRING, 14, 1, 1, 1, &cpval, &status );
 						/* Scattered power correction method */
 						cpval = "SCATTER";
+						cpval = (char*)Scan["SC_MTHD"].c_str();
 						fits_write_col( fits, TSTRING, 15, 1, 1, 1, &cpval, &status );
 						/* Calibration method */
-						cpval = "NONE";
+						cpval = (char*)Scan["CAL_MTHD"].c_str();
 						fits_write_col( fits, TSTRING, 16, 1, 1, 1, &cpval, &status );
 						/* Name of calibration file */
-						cpval = "NONE";
+						cpval = (char*)Scan["CAL_FILE"].c_str();
 						fits_write_col( fits, TSTRING, 17, 1, 1, 1, &cpval, &status );
 						/* RFI excision method */
-						cpval = "ZAP";
+						cpval = (char*)Observatory["RFI_MTHD"].c_str();
 						fits_write_col( fits, TSTRING, 18, 1, 1, 1, &cpval, &status );
 						// /* SCALE */
 						// cpval = "FluxDen";
@@ -396,7 +420,7 @@ class FITS {
 						tform[13] = "1E      ";
 						tunit[13] = "";
 
-						sprintf( Cstr16, "%dD", bflag );
+						sprintf( Cstr16, "%dD", ReadThis->getnumchans() );
 						ttype[14] = "DAT_FREQ";
 						tform[14] = Cstr16;
 						tunit[14] = "";
@@ -427,27 +451,30 @@ class FITS {
 						tunit[20] = "";
 						// Table
 						fits_create_tbl( fits, BINARY_TBL, nrows, ncols, ttype, tform, tunit, "SUBINT", &status);
-						reportAndExitOnFITSerror(status);
-
+						ReportAndExitOnError(status);
 						/* Add dimensions of column 'ncols' = SUBINT Data */
-						naxes[0] = fh->numBins;
-						naxes[1] = fh->numChan;
-						naxes[2] = fh->pol;
+						naxes[0] = ReadThis->getnumbins();// fh->numBins;
+						naxes[1] = ReadThis->getnumchans();// fh->numChan;
+						naxes[2] = ReadThis->getpol();
 						// write tdim 
 						fits_write_tdim( fits, 19, 3, naxes, &status );
-						reportAndExitOnFITSerror(status);
+						ReportAndExitOnError(status);
 
 						/* Add keywords */
-						fits_update_key( fits, TSTRING, "INT_TYPE", "TIME", "Time axis (TIME, BINPHSPERI, BINLNGASC, etc)", &status);
+						cpval = (char*)Scan["INT_TYPE"].c_str();
+						fits_update_key( fits, TSTRING, "INT_TYPE", cpval, "Time axis (TIME, BINPHSPERI, BINLNGASC, etc)", &status);
+						cpval = (char*)Scan["INT_UNIT"].c_str();
 						fits_update_key( fits, TSTRING, "INT_UNIT", "SEC", "Unit of time axis (SEC, PHS (0-1), DEG)", &status);
+						cpval = (char*)Scan["SCALE"].c_str();
 						fits_update_key(fits, TSTRING, "SCALE", "FluxDen","Intensity units (FluxDen/RefFlux/Jansky) ",&status);
+						cpval = (char*)Scan["POL_TYPE"].c_str();
 						fits_update_key(fits, TSTRING, "POL_TYPE", "AA", "Polarisation identifier (e.g., AABBCRCI, AA+BB)", &status);
-						ival = stoi(Scan["NPOL"]);
+						ival = ReadThis->getpol();
 						fits_update_key(fits, TINT, "NPOL", &ival, "Nr of polarisations ",&status);
 						fval = (float)ReadThis->getperiod() / ReadThis->getnumbins();
 						fits_update_key(fits, TFLOAT, "TBIN", &fval, "[s] Time per bin or sample ", &status);
-						k = 1; // TODO
-						fits_update_key(fits, TINT, "NBITS", &k," Number of bits per sample", &status);
+						ival = stoi(Scan["NBITS"]);
+						fits_update_key(fits, TINT, "NBITS", &ival," Number of bits per sample", &status);
 						ival = ReadThis->getnumbins();
 						fits_update_key(fits, TINT, "NBIN", &ival, "Nr of bins (PSR/CAL mode; else 1) ", &status);
 						ival = ReadThis->getnumchans();
@@ -456,14 +483,15 @@ class FITS {
 						fits_update_key(fits, TDOUBLE,"CHAN_BW",&dval,"[MHz] Channel/sub-band width ", &status);
 						fval = (float) ReadThis->getdm();
 						fits_update_key(fits, TFLOAT, "DM", &fval, "[cm-3 pc] DM for post-detection dedisperion ", &status);
-					    // TODO	
-						fval = 0.0;
+						fval = stof(Pulsar["RM"]);
 						fits_update_key(fits, TFLOAT, "RM", &fval, "[rad m-2] RM for post-detection deFaraday", &status);
+						fval = stof(Scan["NCHNOFFS"]);
 						fits_update_key(fits, TFLOAT, "NCHNOFFS", &fval, "Channel/sub-band offset for split files ", &status);
-						ival = 1; // TODO Search mode
+						ival = stoi(Scan["NSBLK"]); // This has to be default of one
 						fits_update_key(fits, TINT, "NSBLK", &ival, "Samples/row (SEARCH mode, else 1)", &status);
+						ival = stoi(Scan["NSTOT"]); // This has to be default of one
 						fits_update_key(fits, TINT, "NSTOT", &ival, "Total number of samples (SEARCH mode, else 1) ", &status);
-						reportAndExitOnFITSerror(status);
+						ReportAndExitOnError(status);
 						// Now focusing on writing the subintegration data.
 						// Declaring stuff here
 						// Such bad programming practises 
@@ -477,13 +505,15 @@ class FITS {
 								 *There is a major assumption happening here.
 								 *It is assumed that First Header of the prof has been read. 
 								 */
-								subs  = ReadThis->readSubs();
 								nscl  = ReadThis->getnumchans() * ReadThis->getpol();// fh->numChan * fh->pol;
 								ndata = ReadThis->getnumbins() * nscl; // fh->numBins * nscl;
+								subs  = new float[ndata];
 
 								binned_weight = new float[ReadThis->getnumchans()] ;
 								binned_offset = new float[nscl];
 								binned_scale  = new float[nscl];
+								
+								ReadThis->readSubs(subs);
 								/*
 								 *binned_weight = (float*)malloc(ReadThis->getnumchans() * sizeof(float));   // (float*)malloc(fh->numChan*sizeof(float));
 								 *binned_offset = (float*)malloc(nscl*sizeof(float));
@@ -633,7 +663,7 @@ class FITS {
 								/* Subint data table - Dimensions of data table = (NBIN,NCHAN,NPOL) */
 								fits_write_col( fits, TFLOAT, col, subint_cnt, 1, ndata, subs, &status );
 								col++;
-								reportAndExitOnFITSerror(status);
+								ReportAndExitOnError(status);
 								/* Why keep a standard when you have to break it? */
 								dval = ReadThis->getperiod();
 								fits_write_col(fits, TDOUBLE, col, subint_cnt, 1, 1, &dval, &status);
@@ -647,6 +677,7 @@ class FITS {
 								delete[] binned_offset;
 								delete[] binned_scale;
 								delete[] binned_freq;
+								delete[] subs;
 								/*
 								 *free(binned_weight);free(binned_offset);free(binned_scale);
 								 *free(binned_freq);
@@ -657,7 +688,7 @@ class FITS {
 								//dflag++;
 								/* Finished SUBINT */
 						}
-						reportAndExitOnFITSerror(status);
+						ReportAndExitOnError(status);
 						return status;
 				}
 };

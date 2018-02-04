@@ -2,3 +2,5 @@
 *.tar.gz
 *.swp
 *.status
+cfgen
+prf2fits

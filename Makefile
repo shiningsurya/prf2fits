@@ -3,8 +3,8 @@
 SHELL := /bin/bash
 CC =  g++
 CPPINC   = -Icfitsio/include -I. 
-CPPFLAGS = -std=c++11 -fpermissive -w # Shamelessly suppressing all the warnings so that
-								      # compilaton is quiet 
+CPPFLAGS = -std=c++11 -fpermissive -w -g # Shamelessly suppressing all the warnings so that
+								         # compilaton is quiet 
 LDFLAGS  = -Lcfitsio/lib -lcfitsio 
 PWD     := $(shell pwd)
 
@@ -20,8 +20,9 @@ clean :
 prf2fits : third.cpp 
 	$(CC) $? $(CPPINC) $(CPPFLAGS) $(LDFLAGS) -lboost_program_options -o $@
 
-all: prf2fits cfgen
-	$(CC) $? $(CPPINC) $(CPPFLAGS) $(LDFLAGS) -o $@
+all:
+	$(MAKE) -f Makefile prf2fits 
+	$(MAKE) -f Makefile cfgen
 
 cfitsio: 
 		@echo "Installing CFITSIO..."

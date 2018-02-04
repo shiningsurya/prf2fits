@@ -4,7 +4,7 @@
 
 
 ### Installation
-Makes use of `cfitsio` which are bundled with `prf2fits`. 
+Makes use of `cfitsio` which is bundled with `prf2fits`. 
 
 It also makes use of `boost/spirit/qi` to do parsing. 
 
@@ -33,9 +33,10 @@ Following is a simple illustration of installing these programs:
 
 `warning ; ISO C++ forbids converting a string constant to 'char*' [-Wwrite-strings]`
 
-Hence, even though it is against the standard practises, we suppress the warnings by passing `-Wwrite-strings`.
+Hence, even though it is against the standard practises, we suppress the warnings by passing `-w`.
 Check out the criticism in [StackOverflow](https://stackoverflow.com/questions/8356223/assign-a-string-literal-to-a-char).
 
+We also have to pass `-fpermissive` since `const void *` is re-interpreted as `void *` in the CFITSIO routines. This means we've to be extra careful in not changing strings in any case. 
 
 ### Documentation
 Documentation for this code is being written. 

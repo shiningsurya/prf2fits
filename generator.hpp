@@ -16,7 +16,9 @@ class AbstractIO{
 				void takeio(){
 				/*
 				 * Iterates over the map and take inputs from the user
-				 * It shows whatever is already in the map as the default input
+                 :close
+                 :clo
+                 :c
 				 */
 						string line;
 						map<string,string>::iterator iter = kv.begin();
@@ -42,6 +44,38 @@ class AbstractIO{
 								iter++;
 						}
 				}
+				void takeio(string key) {
+						// I won't create any new keys here
+						// If I can't find one
+						// Me exit
+						string line;
+						map<string,string>::iterator iter;
+						iter = kv.find(key);
+						if(iter == kv.end()){
+								cerr << "Key " << key << " not recognized...\n";
+								cerr << "Check cfgen...\n";
+								cerr << "Or, edit file manually.\n";
+						}
+						else {
+								cout << "Input for " << iter->first << " ( default = " << iter->second << " ) : " ;
+								//line = cin.get();
+								getline(cin,line);
+								//cin >> line;
+								/* If user punches ENTER 
+								 * Default is taken 
+								 * Else user input is read and stored
+								 * */
+								if( line.empty()) {
+										// Enter case
+										// no change 
+								}
+								else {
+										// User gave input
+										iter->second = line;
+								}
+						}
+
+				}
 				void printer(){
 				/*
 				 *To print everything in the map
@@ -51,17 +85,19 @@ class AbstractIO{
 								cout << iter->first << " : " << iter->second << endl;
 						}
 				}
-				void outputfile(){
-						cout << "Enter the file name ( default = " << filename << " ) : " ;
+				void outputfile(int opt){
 						string line;
-						getline(cin, line);
-						if( line.empty()) {
-								// Enter case
-								// no change 
-						}
-						else {
-								// User gave input
-								filename = line;
+						if(opt == 1) {
+								cout << "Enter the file name ( default = " << filename << " ) : " ;
+								if( line.empty()) {
+										// Enter case
+										// no change 
+								}
+								else {
+										// User gave input
+										filename = line;
+								}
+								getline(cin, line);
 						}
 						ofstream outfile;
 						outfile.open(filename); // Opening
@@ -91,7 +127,6 @@ class Pulsar : public AbstractIO {
 						 * *************************
 						 * Brace yourself!!
 						 */
-						insert("CHAN_DM","0.0");
 						insert("COORD_MD","J2000");
 						insert("EQUINOX","2000.0");
 						insert("RA","00:00:00.0000");
@@ -116,13 +151,6 @@ class Observatory : public AbstractIO {
 						 */
 						insert("TELESCOP","GMRT");
 						insert("ANT_X","1656446.9142");
-	/*
-	 *ph->ant_x = 1656446.9142;
-     *ph->ant_y = 5798313.9493;
-     *ph->ant_z = 2073374.9814;
-     *ph->fend = "30 Antenna Interferometer";
-     *ph->ibeam = 1;
-	 */
 						insert("ANT_Y","5798313.9493");
 						insert("ANT_Z","2073374.9814");
 						insert("FRONTEND","30 Antenna Interferometer");
@@ -191,10 +219,22 @@ class Scan : public AbstractIO {
 						insert("PNT_ID","J2145-0750"); // TODO
 						insert("SRC_NAME","J2145-0750");
 						insert("SCANLEN","3000");						
+						insert("BMAJ","0.0");
+						insert("BMIN","0.0");
+						insert("BPA","0.0");
+						insert("STT_CRD1","00:00:00.0000");
+						insert("STT_CRD2","+00:00.000");
+						insert("TRK_MODE","TRACK");
+						insert("STP_CRD1","00:00:00.0000");
+						insert("STP_CRD2","+00:00.000");
+						insert("FD_MODE","FA");
+						insert("FD_REQ","0.00");
 						insert("STT_IMJD","57375");						
 						insert("STT_SMJD","7345");						
 						insert("STT_OFFS","234535");
-						insert("NPOL","2");		
+						insert("NPOL","2");	
+						insert("NUMBINS","64");
+						insert("NUMCHANS","1024");
 						filename = "scan.cfg";
 				}
 

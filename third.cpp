@@ -42,13 +42,13 @@ int main(int argc, char * argv[]){
 		p.add("input",-1);
 		po::store(po::command_line_parser(argc,argv).options(desc).positional(p).run(), vm);
 		// argument parsing is done..
-		if(vm.count("help")) {
+		if(vm.count("help") || argc < 2) {
 				cout << desc << endl;
 				return true;
 
 		}
 		if(vm.count("bug-in-code")){
-				cout << "If you found some bugs in the code\nOr, would like to discuss about the code with me.\n" ;
+				cout << "If you found some bugs in the code\nOr, would like to discuss the code with me.\n" ;
 				cout << "You can reach me via email on :\n" ;
 				cout << "ep14btech11008 [at] iith [dot] ac [dot] in\n";
 				cout << "Suryrao Bethapudi\n";
@@ -65,6 +65,13 @@ int main(int argc, char * argv[]){
 		 * I am like a conductor of an orchetra 
 		 * and these FITS are my compositions. 
 		 * *********************************/
+		try{
+				myfits.sanityCheck();
+		} catch(string key) {
+				cerr << "Key " << key << " not found to be consistent...\n";
+				cerr << "Please fix it\n";
+				return false;
+		}
 		myfits.createFITS(out.c_str());
 		myfits.primaryHeader();
 		myfits.PutHistoryTable();
