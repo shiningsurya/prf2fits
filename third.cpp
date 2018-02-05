@@ -28,7 +28,7 @@ int main(int argc, char * argv[]){
 		("pulsar,n",po::value<string>(&pulsar)->default_value("pulsar.cfg")->required(),"Pulsar cfg file")
 		("project,p",po::value<string>(&project)->default_value("project.cfg")->required(),"Project cfg file")
 		("scan,s",po::value<string>(&scan)->default_value("scan.cfg")->required(),"Scan cfg file")
-		("input,i",po::value<string>(&input), "Input PROF file\n"
+		("input",po::value<string>(&input), "Input PROF file\n"
 											   "\tYou can directly give the input prof file as the one and only positional argument here.\n" 
 											   "You dont have to type --input or -i." 
 		 )
@@ -39,7 +39,7 @@ int main(int argc, char * argv[]){
 		 )
 		;
 		po::positional_options_description p;
-		p.add("input,i",-1);
+		p.add("input",-1);
 		po::store(po::command_line_parser(argc,argv).options(desc).positional(p).run(), vm);
 		// argument parsing is done..
 		if(vm.count("help") || argc < 2) {
