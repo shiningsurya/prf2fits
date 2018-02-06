@@ -39,9 +39,8 @@ Check out the criticism in [StackOverflow](https://stackoverflow.com/questions/8
 We also have to pass `-fpermissive` since `const void *` is re-interpreted as `void *` in the CFITSIO routines. This means we've to be extra careful in not changing strings in any case. 
 
 ### Documentation
-Documentation for this code is being written. 
-It will be put here once it's ready. 
-
+You can make the documentation (if you can't find it already), by running `make doc`. 
+It will create a `manual.pdf`. 
 
 ### Bugs/Questions/Comments/Suggestions ?
 Suryarao Bethapudi 
