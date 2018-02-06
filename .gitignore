@@ -6,3 +6,4 @@ cfgen
 prf2fits
 testio
 testgen
+*.aux

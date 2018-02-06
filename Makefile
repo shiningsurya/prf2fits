@@ -5,6 +5,11 @@ CC =  g++
 CPPINC   = -Icfitsio/include -I. 
 CPPFLAGS = -std=c++11 -fpermissive -w -g # Shamelessly suppressing all the warnings so that
 								         # compilaton is quiet 
+# Uncomment these lines and add path to CFITSIO header file 
+# to CPPINC and path to shared CFITSIO library
+# CPPINC += 
+# CPPFLAGS +=
+
 LDFLAGS  = -Lcfitsio/lib -lcfitsio 
 PWD     := $(shell pwd)
 
@@ -13,6 +18,9 @@ ioer : testior.cpp
 
 cfgen : testgenerator.cpp 
 		$(CC) $? $(CPPINC) $(CPPFLAGS) $(LDFLAGS) -o $@
+
+doc : doc/manual.tex
+	pdflatex doc/manual.tex --output-directory=doc/
 
 clean :
 	-rm -f testio testgen prf2fits cfgen 
@@ -37,4 +45,4 @@ install:
 	@echo "Building PRF2FITS..."
 	$(MAKE) all
 
-.PHONY: clean cfitsio
+.PHONY: clean cfitsio doc
