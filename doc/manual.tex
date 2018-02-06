@@ -1,0 +1,176 @@
+\documentclass{article}
+\usepackage{multicol}
+\usepackage{geometry}
+\usepackage{xcolor}
+\usepackage{listings}
+% \usepackage[scaled]{beramono} % For using the beramono font
+
+% Captioning
+% \AtBeginDocument{\numberwithin{lstlisting}{section}}  % Number listings within sections (i.e. 1.1, 1.2, 2.1, 2.2 instead of 1, 2, 3, 4)
+
+% Colors
+\definecolor{background}{gray}{.98}                 % Background color definition
+\definecolor{comments}{RGB}{51,102,0}               % Comments   color definition
+\definecolor{keywords}{RGB}{0,0,120}                % Keywords   color definition
+\definecolor{keywords2}{RGB}{204,0,102}             % Keywords2  color definition
+\definecolor{numbers}{RGB}{127, 0, 127}             % Keywords2  color definition
+\definecolor{Maroon}{RGB}{128, 0, 0}
+
+% General config
+\lstset{
+    frame=Ltb,
+    framerule=0pt,
+    aboveskip=0.5cm,
+    framextopmargin=3pt,
+    framexbottommargin=3pt,
+    framexleftmargin=0.4cm,
+    framesep=0pt,
+    rulesep=.4pt,
+    rulecolor=\color{black},
+    %
+    stringstyle=\ttfamily,
+    basicstyle=\small\ttfamily,
+    commentstyle=\itshape\color{comments},
+    keywordstyle=\bfseries\color{keywords},
+    %
+    % numberstyle=\tiny,
+    numberstyle=\small\ttfamily\color{gray},
+    numbers=left,
+    numbersep=8pt,
+    numberfirstline = false,
+    %
+    breakatwhitespace=false,         % sets if automatic breaks should only happenat whitespace
+    breaklines=true,                 % sets automatic line breaking
+    captionpos=t,                    % sets the caption-position to bottom
+    escapeinside={<@}{@>},            % if you want to add LaTeX within your code
+    keepspaces=true,                 % keeps spaces in text, useful for keepingindentation of code (possibly needs columns=flexible)
+    showspaces=false,                % show spaces everywhere adding particularunderscores; it overrides 'showstringspaces'
+    showstringspaces=false,          % underline spaces within strings only
+    showtabs=false,                  % show tabs within strings adding particularunderscores
+    stepnumber=1,                    % the step between two line-numbers. If it's1, each line will be numbered
+    tabsize=2,                       % sets default tabsize to 2 spaces
+}
+
+\geometry{a4paper,
+left=15mm,
+right=12mm,
+top=8mm,
+bottom=5mm}
+\usepackage[utf8]{inputenc}
+\newcommand{\prf}{\texttt{PROFIO}\ }
+\newcommand{\prof}{\texttt{PROF}\ }
+\newcommand{\cfgen}{\texttt{CFGEN}\ }
+\newcommand{\sigproc}{\texttt{SIGPROC}\ }
+\newcommand{\fits}{\texttt{FITS}\ }
+\newcommand{\psrfits}{\texttt{PSRFITS}\ }
+\begin{document}
+% And I came here to write the documentation 
+
+% 1. Introduction 
+% 2. Installation 
+% 3. Usage 
+% 4. Error
+
+\title{PROF2FITS}
+\date{}
+\author{Suryarao Bethapudi}
+\maketitle
+\section*{\hfill Introduction}
+
+\par \prf is a program which takes in \prof file, as outputted by \sigproc, and spits out a \fits file conforming to the \psrfits standards as specified at this HTTP URL. It is primarily written to standardize observed data at GMRT and ORT observatories. Another strong motivation for this is to make observed data compatible with PSRCHIVE software suite. 
+
+\section*{\hfill Installation}
+
+\par \prf written in C++ using BOOST libraries for parsing and providing program options. Hence, it is depended on boost for successful compilation. \prf heavily uses CFITSIO to perform FITS IO operations. There is a Makefile shipped with the code which can be used to build the suite. 
+
+\par To setup BOOST, run 
+\begin{lstlisting}
+sudo apt-get install libboost-all-dev
+\end{lstlisting}
+\par To build CFITSIO and \prf, run 
+\begin{lstlisting}
+make install 
+\end{lstlisting}
+\par CFITSIO is built in place, meaning the include file and the library files are build in cfitsio/lib cfitsio/include . This guarantees to not mess up with anything outside the directory. If you have CFITSIO installed and don't want to build it again(for whatever reason), you will have to edit the Makefile manually so that the compiler can find the CFITSIO library and header files. Note that, it is expected that CFITSIO library you had compiled before is a shared object (which means it should end with .so). 
+\subsection*{\hfill Tell me what I should run?}
+\begin{lstlisting}
+sudo apt-get install libboost-all-dev 
+git clone https://github.com/shiningsurya/prf2fits.git 
+cd prf2fits 
+make install 
+\end{lstlisting}
+\par \textit{You will also have to add the path to \prf and \cfgen to your \texttt{PATH} variable so that you can use it anywhere in the \texttt{SHELL}.}
+\section*{\hfill Usage}
+\subsection*{\hfill \prf}
+\par If we run \prf with no arguments or with -h argument, it prints the following:
+\begin{lstlisting}
+Options:
+  -h [ --help ]                         Prints help
+  --bug-in-code                         Prints contact info
+  -o [ --observatory ] arg (=observatory.cfg)
+                                        Observatory cfg file
+  -n [ --pulsar ] arg (=pulsar.cfg)     Pulsar cfg file
+  -p [ --project ] arg (=project.cfg)   Project cfg file
+  -s [ --scan ] arg (=scan.cfg)         Scan cfg file
+  --input arg                           Input PROF file
+                                        You can directly give the input prof 
+                                        file as the one and only positional 
+                                        argument here.
+                                        You dont have to type --input or -i.
+  -f [ --out ] arg                      FITS file
+                                        Make sure that is no FITS with the same
+                                        name there.
+                                        CFITSIO routines cause error when we 
+                                        create a FITS file 
+                                        with the same name as one already 
+                                        there.
+\end{lstlisting}
+\par The minimalistic illustration of \prf is 
+\begin{lstlisting}
+prf2fits -f out.fits in.prof 
+\end{lstlisting}
+This takes in in.prof prof file and then creates a out.fits \fits file on successful execution of the code. As shown, input file can be given as the only positional argument as well. Alternatively, one can also achieve the same by doing 
+\begin{lstlisting}
+prf2fits -f out.fits -i in.prof
+\end{lstlisting}
+\par In the above run, observatory, pulsar, project and scan take in the default arguments, we can specify them manually as well. The following illustration makes it more obvious. 
+\begin{lstlisting}
+prf2fits -f out.fits -o obs.cfg -n pul.cfg -p proj.cfg -s scan.cfg in.prof
+\end{lstlisting}
+Note that one could also use the long option, for example, the above command is equivalent to 
+\begin{lstlisting}
+prf2fits --out out.fits --observatory obs.cfg --pulsar pul.cfg --project proj.cfg --scan scan.cfg in.prof 
+\end{lstlisting}
+
+\par These cfg files have special structure. They are of the form $key=value;$. \cfgen can be used to generate those cfg files. 
+\subsection*{\hfill \cfgen}
+\par The help screen is as follows:
+\begin{lstlisting}
+Usage : <program> arg
++-------+----------------------------------------------+
+|  ARG  |             Description                      |
++-------+----------------------------------------------+
+|   1   |  Ask everything. Takes some time.            |
+|   2   |  Minimal IO. Assumes you're in GMRT.         |
+|   3   |  Dump the default values in cfg files.       |
+|       |  You will have to edit them manually         |
++-------+----------------------------------------------+
+\end{lstlisting}
+Send in $1$ as the argument if you want to manually input all the required parameters for successful \fits conversion. Send in $2$ if you want to keep most of the default parameters and only change the following:
+\begin{multicols}{4}
+\begin{itemize}
+\item RA
+\item DEC
+\item Source Name
+\item Number of bins
+\item Number of channels
+\end{itemize}
+\end{multicols}
+
+Send in $3$ if you want to dump with the default values. You will have to manually edit them later.  
+\section*{\hfill Queries/Questions/Doubts/Bugs?}
+\par If you come across any errors or have any queries on how to make this program suite your problem, please feel free to drop me an email at 
+\begin{verbatim}
+ep14btech11008 [at] iith [dot] ac [dot] in
+\end{verbatim}
+\end{document}
