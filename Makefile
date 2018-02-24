@@ -45,4 +45,6 @@ install:
 	@echo "Building PRF2FITS..."
 	$(MAKE) all
 
+testmjd: testmjd.cpp 
+	$(CC) $? $(CPPINC)  $(CPPFLAGS) $(LDFLAGS) -o $@
 .PHONY: clean cfitsio doc

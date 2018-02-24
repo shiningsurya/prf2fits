@@ -13,7 +13,6 @@
 class FITS;
 class PROFIO;
 
-
 // definition of header struct
 struct Header {
 		std::string observer, project, telescope;

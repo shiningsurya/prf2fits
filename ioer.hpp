@@ -38,8 +38,8 @@ namespace client
 						{
 								query =  pair >> *((qi::lit(';') | '&') >> pair);
 								pair  =  key >> -('=' >> value);
-								key   =  qi::char_("a-zA-Z_") >> *qi::char_("a-zA-Z_0-9");
-								value = +qi::char_("a-zA-Z_0-9");
+								key   =  qi::char_("a-zA-Z_") >> *qi::char_("a-zA-Z_0-9 -");
+								value = +qi::char_("a-zA-Z_0-9 +-:. ");
 						}
 
 						qi::rule<Iterator, pairs_type()> query;
@@ -74,6 +74,7 @@ class IOer {
 		private:
 				client::key_value_sequence<string::iterator> pparse; // This is my parser.
 				client::pairs_type data;
+				client::pairs_type::iterator iter;
 				string filename;
 				void updater(string& line)  {
 						//vector<string> res; // I can't seem to not use this
@@ -154,6 +155,13 @@ class IOer {
 				string GetValue(string key){
 						return data[key]; // I didn't think C++ would be this cool
 				}
-				string operator[] (string key) {return data[key];}
+				string operator[] (string key) {
+						iter = data.begin();
+						while(iter != data.end()){
+								if(iter->first == key) return iter->second;
+								else iter++;
+						}
+						cerr << "Key " << key << " not found. \n";
+				}
 				string getFileName(){ return filename; }
 };

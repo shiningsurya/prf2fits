@@ -70,13 +70,7 @@ int main(int argc, char * argv[]){
 		 * I am like a conductor of an orchetra 
 		 * and these FITS are my compositions. 
 		 * *********************************/
-		try{
-				myfits.sanityCheck();
-		} catch(const char * key) {
-				cerr << "Key " << key << " not found to be consistent...\n";
-				cerr << "Please fix it\n";
-				return false;
-		}
+		myfits.sanityCheck();
 		myfits.createFITS(out.c_str());
 		myfits.primaryHeader();
 		myfits.PutHistoryTable();

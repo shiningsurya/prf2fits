@@ -33,12 +33,12 @@ int main(int argc, char * argv[]) {
 		}
 		if(opt == 2){
 				// What all are required??
-				// NUMBINS NUMCHANS SOURCE RA DEC
+				// NUMCHANS SOURCE RA DEC NPOL
 				pul.takeio("RA");
 				pul.takeio("DEC");
 				scan.takeio("SRC_NAME");
-				scan.takeio("NUMBINS");
 				scan.takeio("NUMCHANS");
+				scan.takeio("NPOL");
 		}
 		// This is default in all the three cases.
 		pul.outputfile(opt);

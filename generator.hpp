@@ -4,10 +4,20 @@
 class AbstractIO{
 		private:
 				map<string,string> kv;
+				map<string,string>::iterator iter;
 		protected:
 				string filename;
 		public:
-				string operator[] (string key) {return kv[key];}
+				string operator[] (string key) {
+						iter = kv.begin();
+						while(iter != kv.end()){
+								if(iter->first == key)
+										return iter->second;
+								else 
+										iter++;
+						}
+						//cerr << "Key " << key << " not found." << endl;
+				}
 				void insert(string k, string v){
 						pair<string,string> rp(k,v);
 						kv.insert(rp);
@@ -21,8 +31,8 @@ class AbstractIO{
                  :c
 				 */
 						string line;
-						map<string,string>::iterator iter = kv.begin();
 						cout << "Starting IO....Hit ENTER to take in the default value\n";
+						iter = kv.begin();
 						while(iter != kv.end()){
 								// iter->first , iter->second
 								cout << "Input for " << iter->first << " ( default = " << iter->second << " ) : " ;
@@ -127,6 +137,7 @@ class Pulsar : public AbstractIO {
 						 * *************************
 						 * Brace yourself!!
 						 */
+						insert("DM","0.00");
 						insert("COORD_MD","J2000");
 						insert("EQUINOX","2000.0");
 						insert("RM","0.0");
@@ -154,7 +165,7 @@ class Observatory : public AbstractIO {
 						insert("ANT_X","1656446.9142");
 						insert("ANT_Y","5798313.9493");
 						insert("ANT_Z","2073374.9814");
-						insert("FRONTEND","30_Antenna_Interferometer");
+						insert("FRONTEND","30 Antenna Interferometer");
 						insert("IBEAM","1");
 						insert("NRCVR","1");
 						insert("FD_POLN","LIN");
@@ -167,6 +178,10 @@ class Observatory : public AbstractIO {
 						insert("BE_DCC","0");
 						insert("BE_DELAY","0.0");
 						insert("TCYCLE","0.0");
+						insert("PROC_CMD","SIGPROC");
+						insert("ZERO_OFF","0.00");
+						insert("SIGNINT","1");						
+						insert("NBITS","64");
 						filename = "observatory.cfg";
 				}
 
@@ -196,6 +211,8 @@ class Project : public AbstractIO {
 						insert("CAL_MODE","OFF");						
 						insert("CAL_FREQ","0.00");						
 						insert("CAL_DCYC","1.0");						
+						insert("NSBLK","1");
+						insert("NSTOT","1");
 						insert("CAL_PHS","0.0");						
 						insert("CAL_NPHS","0.");						
 						filename = "project.cfg";
@@ -219,7 +236,7 @@ class Scan : public AbstractIO {
 						insert("PNT_ID","J2145-0750"); // TODO
 						insert("SRC_NAME","J2145-0750");
 						insert("SCANLEN","3000");						
-						insert("BMAJ","0.0");
+						insert("BMAJ","0.0"); // Beam Major Axis length
 						insert("BMIN","0.0");
 						insert("BPA","0.0");
 						insert("STT_CRD1","00:00:00.0000");
@@ -234,12 +251,19 @@ class Scan : public AbstractIO {
 						insert("STT_OFFS","234535");
 						insert("STT_LST","12345");	
 						insert("NPOL","1");	
-						insert("NUMBINS","64");
-						insert("NBITS","64");
+						insert("CHAN_BW","100.");
 						insert("NUMCHANS","1024");
+						insert("POL_TYPE","AA");
 						insert("NCHNOFFS","0.0");
-						insert("NSBLK","1");
-						insert("NSTOT","1");
+						insert("NSUBOFFS","0.00");
+						insert("DDS_MTHD","Coherent Dedispersion");
+						insert("SC_MTHD","Scatter");
+						insert("CAL_MTHD","Calibro");
+						insert("CAL_FILE","Calorie");
+						insert("RFI_MTHD","exRFI");
+						insert("INT_TYPE","TIME");
+						insert("INT_UNIT","SEC");
+						insert("SCALE","FluxDen");
 						filename = "scan.cfg";
 				}
 
