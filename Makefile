@@ -16,7 +16,7 @@ PWD     := $(shell pwd)
 ioer : testior.cpp 
 		$(CC) $? $(CPPINC) $(CPPFLAGS) $(LDFLAGS) -o $@
 
-cfgen : testgenerator.cpp 
+cfgen : testgenerator.cpp generator.hpp 
 		$(CC) $? $(CPPINC) $(CPPFLAGS) $(LDFLAGS) -o $@
 
 doc : doc/manual.tex
@@ -25,16 +25,14 @@ doc : doc/manual.tex
 clean :
 	-rm -f testio testgen prf2fits cfgen 
 
-prf2fits : third.cpp 
-	$(CC) $? $(CPPINC) $(CPPFLAGS) $(LDFLAGS) -lboost_program_options -o $@
+prf2fits : third.cpp pfits.hpp mjder.hpp 
+	$(CC) third.cpp $(CPPINC) $(CPPFLAGS) $(LDFLAGS) -lboost_program_options -o $@
 
 all:
 	$(MAKE) -f Makefile prf2fits 
 	$(MAKE) -f Makefile cfgen
 
-install:
-	$(MAKE) cfitsio 
-	@echo "Building PRF2FITS..."
-	$(MAKE) all
+mjder: testmjd.cpp mjder.hpp
+	$(CC) testmjd.cpp $(CPPINC) $(CPPFLAGS) $(LDFLAGS) -o $@ 
 
 .PHONY: clean doc

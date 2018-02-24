@@ -8,10 +8,13 @@
 #include<string>
 #include "fitsio.h"
 #include "ioer.hpp"
-
+#include "mjder.hpp"
 // class IOer;
 class FITS;
 class PROFIO;
+
+// class managemJD
+class ManageMJD;
 
 // definition of header struct
 struct Header {

@@ -103,7 +103,6 @@ class FITS {
 								cerr << "Unable to read Header\n";
 						}; // This is to be the first call.
 						configDone = true;
-						fits_get_system_time( date_time, &ival, &status);
 				}
 				~FITS() {
 						delete ReadThis;
@@ -202,7 +201,10 @@ class FITS {
 						fits_update_key(fits, TLONG, "TCYCLE", &lval, "Native cycle time of correlation system",&status);
 						cpval = (char*)Project["OBS_MODE"].c_str();
 						fits_update_key(fits, TSTRING, "OBS_MODE", cpval, "(PSR, CAL, SEARCH) ", &status);
-						cpval = (char*)Scan["DATE-OBS"].c_str();
+						//cpval = (char*)Scan["DATE-OBS"].c_str();
+						ManageMJD mm(ReadThis->getmjd(), ReadThis->getfract());
+						string smm = mm.getDateTime();
+						cpval = (char*)smm.c_str();
 						fits_update_key(fits, TSTRING, "DATE-OBS", cpval ,"UTC date of observation (YYYY-MM-DDThh:mm:ss) ", &status);
 						dval = stod(Project["OBSFREQ"]);
 						dval = (double)ReadThis->getfreq();
@@ -273,6 +275,7 @@ class FITS {
 						dval = ReadThis->getfract() - lval;
 						fits_update_key(fits, TDOUBLE, "STT_OFFS", &dval,"[s] Start time offset (D) ",&status);
 						//dval = stod(Scan["STT_LST"]); // CHECK THIS :
+						dval = ReadThis->getfract();
 						fits_update_key(fits, TDOUBLE, "STT_LST", &dval, "[s] Start LST (D) ",&status);
 						//ival = stoi(Scan["NPOL"]);
 						ival = ReadThis->getpol();
@@ -304,8 +307,8 @@ class FITS {
 						};
 						fits_create_tbl( fits, BINARY_TBL, nrows, ncols, PHtype, PHform, PHunit, "HISTORY", &status);
 						/* Processing date and time (YYYY-MM-DDThh:mm:ss UTC) */
-						fits_get_system_time(date_time, &ival, &status);
-						fits_write_col( fits, TSTRING, 1, 1, 1, 1, &date_time, &status );
+						cpval = date_time;
+						fits_write_col( fits, TSTRING, 1, 1, 1, 1, &cpval, &status );
 						/* Processing program and command */
 						cpval = (char*)Observatory["PROC_CMD"].c_str();
 						fits_write_col( fits, TSTRING, 2, 1, 1, 1, &cpval, &status );
