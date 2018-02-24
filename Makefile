@@ -32,19 +32,9 @@ all:
 	$(MAKE) -f Makefile prf2fits 
 	$(MAKE) -f Makefile cfgen
 
-cfitsio: 
-		@echo "Installing CFITSIO..."
-		@chmod +x $(PWD)/cfitsio/configure
-		@$(PWD)/cfitsio/configure --prefix=$(PWD)/cfitsio/ CFLAGS=-fPIC FFLAGS=-fPIC  
-		@$(MAKE) -C cfitsio -f Makefile shared 
-		@$(MAKE) -C cfitsio -f Makefile install  
-		@$(MAKE) -C cfitsio -f Makefile clean
-
 install:
 	$(MAKE) cfitsio 
 	@echo "Building PRF2FITS..."
 	$(MAKE) all
 
-testmjd: testmjd.cpp 
-	$(CC) $? $(CPPINC)  $(CPPFLAGS) $(LDFLAGS) -o $@
-.PHONY: clean cfitsio doc
+.PHONY: clean doc

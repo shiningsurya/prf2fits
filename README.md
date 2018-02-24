@@ -14,7 +14,10 @@ The only way to use that functionality of boost right now is to run
 
 *We want this program to be stand alone, and have no dependencies for which `apt-get` has to be used.*
 
-`Makefile` has been crafted which installs `prf2fits`, `cfgen` and sets up the `cfitsio` dependencies on its own. 
+`Makefile` has been crafted which installs `prf2fits` and `cfgen`. To install CFITSIO, do the following:
+`./configure --prefix=XXXX CFLAGS=-fPIC FFLAGS=-fPIC`
+`make shared && make install && make clean`
+Please note to replace `XXXX` with the root directory (i.e., where you have downloaded the `prf2fits` source files).
 
 You may want to add the path of this directory to your `PATH` environmental variable so that you can use the binaries generated here.
 
@@ -24,7 +27,9 @@ Following is a simple illustration of installing these programs:
 
 `git clone https://github.com/shiningsurya/prf2fits.git`
 
-`make install`
+*install CFITSIO*
+
+`make all`
 
 
 ### Note

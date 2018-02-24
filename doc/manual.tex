@@ -87,17 +87,29 @@ bottom=5mm}
 \begin{lstlisting}
 sudo apt-get install libboost-all-dev
 \end{lstlisting}
-\par To build CFITSIO and \prf, run 
+\par To build CFITSIO, run the following commands in the cfitsio directory:  
 \begin{lstlisting}
-make install 
+./configure --prefix=XXXX CFLAGS=-fPIC FFLAGS=-fPIC
+make shared 
+make install
+make clean
+\end{lstlisting}
+Please replace XXXX with root directory (i.e., where you have downloaded the prf2fits source files). 
+\begin{lstlisting}
+make all 
 \end{lstlisting}
 \par CFITSIO is built in place, meaning the include file and the library files are build in cfitsio/lib cfitsio/include . This guarantees to not mess up with anything outside the directory. If you have CFITSIO installed and don't want to build it again(for whatever reason), you will have to edit the Makefile manually so that the compiler can find the CFITSIO library and header files. Note that, it is expected that CFITSIO library you had compiled before is a shared object (which means it should end with .so). 
 \subsection*{\hfill Tell me what I should run?}
 \begin{lstlisting}
 sudo apt-get install libboost-all-dev 
 git clone https://github.com/shiningsurya/prf2fits.git 
+cd cfitsio
+./configure --prefix=XXXX CFLAGS=-fPIC FFLAGS=-fPIC
+make shared 
+make install
+make clean
 cd prf2fits 
-make install 
+make all 
 \end{lstlisting}
 \par \textit{You will also have to add the path to \prf and \cfgen to your \texttt{PATH} variable so that you can use it anywhere in the \texttt{SHELL}.}
 \section*{\hfill Usage}
@@ -162,7 +174,6 @@ Send in $1$ as the argument if you want to manually input all the required param
 \item RA
 \item DEC
 \item Source Name
-\item Number of bins
 \item Number of channels
 \end{itemize}
 \end{multicols}
