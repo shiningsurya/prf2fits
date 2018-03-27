@@ -2,7 +2,7 @@
 # PRF2FITS
 SHELL := /bin/bash
 CC =  g++
-CPPINC   = -Icfitsio/include -I. 
+CPPINC   = -Icfitsio/include -I. -Iboost/ 
 CPPFLAGS = -std=c++11 -fpermissive -w -g # Shamelessly suppressing all the warnings so that
 								         # compilaton is quiet 
 # Uncomment these lines and add path to CFITSIO header file 
@@ -17,7 +17,7 @@ ioer : testior.cpp
 		$(CC) $? $(CPPINC) $(CPPFLAGS) $(LDFLAGS) -o $@
 
 cfgen : testgenerator.cpp generator.hpp 
-		$(CC) $? $(CPPINC) $(CPPFLAGS) $(LDFLAGS) -o $@
+		$(CC) testgenerator.cpp $(CPPINC) $(CPPFLAGS) $(LDFLAGS) -o $@
 
 doc : doc/manual.tex
 	pdflatex doc/manual.tex --output-directory=doc/
