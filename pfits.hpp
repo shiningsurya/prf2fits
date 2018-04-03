@@ -580,11 +580,15 @@ class FITS {
 								 * Actually testing out with ORT data in the 
 								 * 1st busy week made me realize what I had is actually work
 								 * reverting back to the original formula
-								 * *********************
+								 * **********************
 								 * Understanding what the formula says
 								 * fh->fract*slen/(mid*2)
+								 * **********************
+								 * After hours of debugging,
+								 * I am going to set this to zero 
 								 * *********************/
-								dval = ReadThis->getfract() / 2;
+								//dval = ReadThis->getfract() / 2;
+								dval = 0.00;
 								fits_write_col( fits, TDOUBLE, col, subint_cnt, 1, 1, &dval, &status );
 								col++;
 
@@ -592,8 +596,9 @@ class FITS {
 								// ds = sum_subint_lst_sin / sum_subint_len_secs;
 								// dc = sum_subint_lst_cos / sum_subint_len_secs;
 								// if( ( dx = ( atan2( ds, dc ) / TwoPi ) ) < 0.0 ) dx += 1.0;
-								dval = 86400.0 * (double)ReadThis->getfract();
+								//dval = 86400.0 * (double)ReadThis->getfract();
 								//dx = 86400.0*fh->fract;
+								dval = 0.00;	
 								fits_write_col( fits, TDOUBLE, col, subint_cnt, 1, 1, &dval, &status );
 								col++;
 
@@ -617,7 +622,7 @@ class FITS {
 								// ds = sum_subint_Glon_sin / sum_subint_len_secs;
 								// dc = sum_subint_Glon_cos / sum_subint_len_secs;
 								// if( ( dx = ( atan2( ds, dc ) / TwoPi ) ) < 0.0 ) dx += 1.0;
-								// dx = 360.0;
+								//dval = 360.0;
 								fits_write_col( fits, TDOUBLE, col, subint_cnt, 1, 1, &dval, &status );
 								col++;
 
@@ -660,7 +665,7 @@ class FITS {
 								// dc = sum_subint_az_cos / sum_subint_len_secs;
 								// if( ( dx = ( atan2( ds, dc ) / TwoPi ) ) < 0.0 ) dx += 1.0;
 								// dx = 360.0;
-								fval = (float) dval;
+								//fval = (float) dval;
 								fits_write_col( fits, TFLOAT, col, subint_cnt, 1, 1, &fval, &status );
 								col++;
 
