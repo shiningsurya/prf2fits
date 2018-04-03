@@ -87,6 +87,10 @@ bottom=5mm}
 \begin{lstlisting}
 sudo apt-get install libboost-all-dev
 \end{lstlisting}
+And, on Fedora/CentOS/RHEL machines:
+\begin{lstlisting}
+sudo yum install boost-devel
+\end{lstlisting}
 \par To build CFITSIO, run the following commands in the cfitsio directory:  
 \begin{lstlisting}
 ./configure --prefix=XXXX CFLAGS=-fPIC FFLAGS=-fPIC
@@ -112,6 +116,10 @@ cd prf2fits
 make all 
 \end{lstlisting}
 \par \textit{You will also have to add the path to \prf and \cfgen to your \texttt{PATH} variable so that you can use it anywhere in the \texttt{SHELL}.}
+And, if you're on Fedora/CentOS/RHEL machines and have to use \textt{yum}, you should run 
+\begin{lstlisting}
+sudo yum install boost-devel
+\end{lstlisting}
 \section*{\hfill Usage}
 \subsection*{\hfill \prf}
 \par If we run \prf with no arguments or with -h argument, it prints the following:
