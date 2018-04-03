@@ -576,11 +576,15 @@ class FITS {
 								 * dx = fh->fract/2; # This is what I had above 
 								 * I am chaning that to fh->fract + slen/2 
 								 * Intuition wise, it makes sense to me.
+								 * **********************
+								 * Actually testing out with ORT data in the 
+								 * 1st busy week made me realize what I had is actually work
+								 * reverting back to the original formula
 								 * *********************
 								 * Understanding what the formula says
 								 * fh->fract*slen/(mid*2)
 								 * *********************/
-								dval = ReadThis->getfract() + (dval/2);
+								dval = ReadThis->getfract() / 2;
 								fits_write_col( fits, TDOUBLE, col, subint_cnt, 1, 1, &dval, &status );
 								col++;
 
