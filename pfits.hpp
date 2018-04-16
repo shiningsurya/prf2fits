@@ -520,6 +520,7 @@ class FITS {
 						float *binned_weight, *binned_offset, *binned_scale;
 						float *binned_freq;
 						float * subs;
+						double off_sub;
 						while(ReadThis->MoreThere()){
 								/*
 								 *There is a major assumption happening here.
@@ -586,10 +587,19 @@ class FITS {
 								 * **********************
 								 * After hours of debugging,
 								 * I am going to set this to zero 
+								 * *********************
+								 * So, according to my intuition and after looking after various codes, 
+								 * I have decided the following to be the proper definition of this field
+								 * ---------------------
+								 * first sub-int is the reference epoch 
+								 * second sub-int ka offs_sub reference epoch + first-int ka length
+								 * third sub-int ka offs_sub = reference epoch + first sub-ka length + second ka length
+								 * cumulative add
 								 * *********************/
 								//dval = ReadThis->getfract() / 2;
-								dval = 0.00;
-								fits_write_col( fits, TDOUBLE, col, subint_cnt, 1, 1, &dval, &status );
+								//dval = 0.00;
+								fits_write_col( fits, TDOUBLE, col, subint_cnt, 1, 1, &off_sub, &status );
+								off_sub += dval; // this dval should be TSUBINT
 								col++;
 
 								/* [s] LST at subint centre */
