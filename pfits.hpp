@@ -520,7 +520,14 @@ class FITS {
 						float *binned_weight, *binned_offset, *binned_scale;
 						float *binned_freq;
 						float * subs;
-						double off_sub;
+						double off_sub = 0.00;
+						double runpulses = 0.00;
+						/*
+						 * This above double runpulses
+						 * SIGPROC gives out running sum of number of pulses
+						 * This messes the TSUBINT
+						 * messes it very badly
+						 */
 						while(ReadThis->MoreThere()){
 								/*
 								 *There is a major assumption happening here.
@@ -563,7 +570,14 @@ class FITS {
 								fits_write_col( fits, TDOUBLE, col, subint_cnt, 1, 1, &dval, &status );
 								col++;
 								/* [s] Length of subint ALAKAZAM */
-								dval = (double) ReadThis->getperiod() * (double) ReadThis->getnumpul();
+								/***
+								 * When we thought everything is fine.
+								 * Random bug about TSUBINT appears
+								 * **/
+								dval = (double) ReadThis->getnumpul() - runpulses;
+								dval *= (double) ReadThis->getperiod();
+								//dval = (double) ReadThis->getperiod() * (double) ReadThis->getnumpul();
+								runpulses = (double) ReadThis->getnumpul();
 								//double mdx = fh->period * (double)fh->numPulses;
 								fits_write_col( fits, TDOUBLE, col, subint_cnt, 1, 1, &dval, &status );
 								col++;
