@@ -54,9 +54,7 @@ int main(int argc, char * argv[]){
 		}
 		if(vm.count("bug-in-code")){
 				cout << "If you found some bugs in the code\nOr, would like to discuss the code with me.\n" ;
-				cout << "You can reach me via email on :\n" ;
-				cout << "shining [dot] surya [dot] d8 [at] gmail [dot] com\n";
-				cout << "Alternatively, you can raise an issue in Github\n";
+				cout << "You can raise an issue in Github\n";
 				cout << "Suryrao Bethapudi\n";
 				return true;
 		}
