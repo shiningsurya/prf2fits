@@ -37,6 +37,11 @@ int main(int argc, char * argv[]){
 										 "CFITSIO routines cause error when we create a FITS file \n"
 										 "with the same name as one already there."
 		 )
+		("overload_frequency,w","Forces prf2fits to use the centre frequency\n"
+								"as provided in the cfg files rather than using\n"
+								"top of the subband frequency given in header of prof\n"
+								"This is not the default behavior\n"
+		)
 		;
 		po::positional_options_description p;
 		p.add("input",-1);
@@ -50,7 +55,8 @@ int main(int argc, char * argv[]){
 		if(vm.count("bug-in-code")){
 				cout << "If you found some bugs in the code\nOr, would like to discuss the code with me.\n" ;
 				cout << "You can reach me via email on :\n" ;
-				cout << "ep14btech11008 [at] iith [dot] ac [dot] in\n";
+				cout << "shining [dot] surya [dot] d8 [at] gmail [dot] com\n";
+				cout << "Alternatively, you can raise an issue in Github\n";
 				cout << "Suryrao Bethapudi\n";
 				return true;
 		}
@@ -58,6 +64,12 @@ int main(int argc, char * argv[]){
 				cerr << "No input file given\n";
 				cerr << "Exiting...\n";
 				return false;
+		}
+		if(vm.count("overload_frequency")) {
+				OverRideCFreq = true;
+		}
+		else {
+				OverRideCFreq = false;
 		}
 		po::notify(vm); // only raises any errors encountered. 
 		// Creating a FITS file

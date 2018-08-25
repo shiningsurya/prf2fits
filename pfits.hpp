@@ -129,8 +129,10 @@ class FITS {
 								cout << "Overiding DM in cfg to what is read from PROF\n";
 								// lazy overiding
 						}
-						if(stoi(Project["OBSFREQ"]) != ReadThis->getfreq() ) {
-								cout << "Overiding OBSFREQ in cfg to what is read from PROF\n";
+						if(OverRideCFreq == false) {
+								if(stoi(Project["OBSFREQ"]) != ReadThis->getfreq() ) {
+										cout << "Overiding OBSFREQ in cfg to what is read from PROF\n";
+								}
 						}
 						return 0;
 				} 
@@ -206,8 +208,9 @@ class FITS {
 						string smm = mm.getDateTime();
 						cpval = (char*)smm.c_str();
 						fits_update_key(fits, TSTRING, "DATE-OBS", cpval ,"UTC date of observation (YYYY-MM-DDThh:mm:ss) ", &status);
-						dval = stod(Project["OBSFREQ"]);
-						dval = (double)ReadThis->getfreq();
+						// if true, override the prof freq and use cfg freq
+						if(OverRideCFreq == true) dval = stod(Project["OBSFREQ"]);
+						else dval = (double)ReadThis->getfreq();
 						fits_update_key(fits, TDOUBLE, "OBSFREQ", &dval, "[MHz] Centre frequency for observation",&status);
 						dval = stod(Project["OBSBW"]);
 						fits_update_key(fits, TDOUBLE, "OBSBW", &dval, "[MHz] Bandwidth for observation ",&status);
@@ -331,16 +334,16 @@ class FITS {
 						dval = (double) ReadThis->getperiod() / ReadThis->getnumbins();
 						fits_write_col( fits, TDOUBLE, 7, 1, 1, 1, &dval, &status );
 						/* Centre freq. */
-						// dx = (double)(fh->freq);
-						//dval = stod(Project["OBSFREQ"]);
-						dval = (double)ReadThis->getfreq();
+						// if true, override the prof freq and use cfg freq
+						if(OverRideCFreq == true) dval = stod(Project["OBSFREQ"]);
+						else dval = (double)ReadThis->getfreq();
 						fits_write_col( fits, TDOUBLE, 8, 1, 1, 1, &dval, &status );
 						/* Number of channels */
 						//ival = stoi(Scan["NUMCHANS"]);
 						ival = (int)ReadThis->getnumchans();
 						fits_write_col( fits, TSHORT, 9, 1, 1, 1, &ival, &status );
 						/* Channel bandwidth */
-						dval = - (double) stod(Project["OBSBW"]) / ival; 
+						dval = (double) stod(Project["OBSBW"]) / ival; 
 						// printf("Channel Bandwidth %lf\n", dx);
 						fits_write_col( fits, TDOUBLE, 10, 1, 1, 1, &dval, &status );
 						ival = 0;

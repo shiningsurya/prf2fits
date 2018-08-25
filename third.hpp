@@ -52,3 +52,5 @@ struct fromHeader {
 		int numbins, pol, numchans;
 		char tid;
 };
+
+bool OverRideCFreq;

@@ -31,7 +31,6 @@ Following is a simple illustration of installing these programs:
 
 `make all`
 
-
 ### Note
 
 `CFITSIO` is a library built for FITS file IO in C, hence the name. Consequently, there are a lot warnings such as 
@@ -50,8 +49,6 @@ It will create a `manual.pdf`.
 ### Bugs/Questions/Comments/Suggestions ?
 Suryarao Bethapudi 
 
-Email : ep14btech11008 [at] iith [dot] ac [dot] in
-
-Or, you can just make an issue in the Github repo.
+You can make an issue in the Github repo.
 
 
