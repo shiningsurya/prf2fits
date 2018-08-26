@@ -25,7 +25,7 @@ doc : doc/manual.tex
 clean :
 	-rm -f testio testgen prf2fits cfgen 
 
-prf2fits : third.cpp pfits.hpp mjder.hpp 
+prf2fits : third.cpp pfits.hpp mjder.hpp ioer.hpp 
 	$(CC) third.cpp $(CPPINC) $(CPPFLAGS) $(LDFLAGS) -lboost_program_options -o $@
 
 all:

@@ -747,4 +747,36 @@ class FITS {
 						ReportAndExitOnError(status);
 						return status;
 				}
+				int PutPar(string par) {
+						// If this is running 
+						// means we gotta put PAR file
+						// as per this: https://www.atnf.csiro.au/research/pulsar/psrfits_definition/PsrfitsDocumentation.html
+						// we have to just copy the file line by line
+						// eazy-peazy
+						int nrows = 0, ncols = 1, nline = 1;
+						char *ParType = "PARAM";
+						char *ParForm = "128A";
+						char *ParUnit = "Pulsar ephemeris";
+						// Those ampersands to give char**
+						fits_create_tbl( fits, BINARY_TBL, nrows, ncols, &ParType, &ParForm, &ParUnit, "PSRPARAM", &status);
+						//fits_create_tbl( fits, BINARY_TBL, nrows, ncols, PHtype, PHform, PHunit, "HISTORY", &status);
+						// file IO
+						ifstream parfile;
+						parfile.open(par,ios::in);
+						string line;
+						if(parfile.is_open()) {
+								// read
+								while( getline(parfile, line) ) {
+										// fits write logic
+										//fits_write_col( fits, TSTRING, 16, 1, 1, 1, &cpval, &status );
+										cpval = (char*)line.c_str();
+										fits_write_col(fits, TSTRING, 1, nline, 1, 1, &cpval, &status);
+										nline++;
+								}
+								parfile.close();
+								// when you've eaten the file
+						}
+						ReportAndExitOnError(status);
+						return status;
+				}
 };

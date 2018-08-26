@@ -156,12 +156,19 @@ class IOer {
 						return data[key]; // I didn't think C++ would be this cool
 				}
 				string operator[] (string key) {
-						iter = data.begin();
-						while(iter != data.end()){
-								if(iter->first == key) return iter->second;
-								else iter++;
+						//iter = data.begin();
+						//while(iter != data.end()){
+								//if(iter->first == key) return iter->second;
+								//else iter++;
+						//}
+						//cerr << "Key " << key << " not found. \n";
+						try {
+								return data.at(key);
 						}
-						cerr << "Key " << key << " not found. \n";
+						catch (const out_of_range &oor) {
+								cout << filename << " doesn't have " << key << " in it.\n";
+								cout << "Please check it and re-run.\n";
+						}
 				}
 				string getFileName(){ return filename; }
 };

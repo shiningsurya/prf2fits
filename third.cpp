@@ -16,7 +16,7 @@ using  namespace std;
 namespace po = boost::program_options;
 
 int main(int argc, char * argv[]){
-		string observatory, pulsar, observation, project, scan; // file io
+		string observatory, pulsar, observation, project, scan, par; // file io
 		string input, out;
 		po::variables_map vm;
 		// PO
@@ -28,6 +28,8 @@ int main(int argc, char * argv[]){
 		("pulsar,n",po::value<string>(&pulsar)->default_value("pulsar.cfg")->required(),"Pulsar cfg file")
 		("project,p",po::value<string>(&project)->default_value("project.cfg")->required(),"Project cfg file")
 		("scan,s",po::value<string>(&scan)->default_value("scan.cfg")->required(),"Scan cfg file")
+		("par,a",po::value<string>(&par),"Pulsar Ephemeris file\n"
+										 "N.B: This is not a required option.")
 		("input",po::value<string>(&input), "Input PROF file\n"
 											   "\tYou can directly give the input prof file as the one and only positional argument here.\n" 
 											   "You dont have to type --input or -i." 
@@ -54,7 +56,9 @@ int main(int argc, char * argv[]){
 		}
 		if(vm.count("bug-in-code")){
 				cout << "If you found some bugs in the code\nOr, would like to discuss the code with me.\n" ;
-				cout << "You can raise an issue in Github\n";
+				cout << "You can reach me via email on :\n" ;
+				cout << "shining [dot] surya [dot] d8 [at] gmail [dot] com\n";
+				cout << "Alternatively, you can raise an issue in Github\n";
 				cout << "Suryrao Bethapudi\n";
 				return true;
 		}
@@ -84,6 +88,7 @@ int main(int argc, char * argv[]){
 		myfits.createFITS(out.c_str());
 		myfits.primaryHeader();
 		myfits.PutHistoryTable();
+		if(vm.count("par")) myfits.PutPar(par);
 		myfits.PutSubint();
 		myfits.closeFITS();		
 		return 0;
