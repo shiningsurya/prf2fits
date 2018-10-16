@@ -278,7 +278,8 @@ class FITS {
 						dval = ReadThis->getfract() - lval;
 						fits_update_key(fits, TDOUBLE, "STT_OFFS", &dval,"[s] Start time offset (D) ",&status);
 						//dval = stod(Scan["STT_LST"]); // CHECK THIS :
-						dval = ReadThis->getfract();
+						dval = ReadThis->getfract(); // <-- PRESTO cooly sets it to zero
+						dval = 0.0;
 						fits_update_key(fits, TDOUBLE, "STT_LST", &dval, "[s] Start LST (D) ",&status);
 						//ival = stoi(Scan["NPOL"]);
 						ival = ReadThis->getpol();

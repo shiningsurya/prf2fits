@@ -29,8 +29,7 @@ prf2fits : third.cpp pfits.hpp mjder.hpp ioer.hpp
 	$(CC) third.cpp $(CPPINC) $(CPPFLAGS) $(LDFLAGS) -lboost_program_options -o $@
 
 all:
-	$(MAKE) -f Makefile prf2fits 
-	$(MAKE) -f Makefile cfgen
+		prf2fits cfgen
 
 mjder: testmjd.cpp mjder.hpp
 	$(CC) testmjd.cpp $(CPPINC) $(CPPFLAGS) $(LDFLAGS) -o $@ 
