@@ -13,7 +13,7 @@ CPPFLAGS = -std=c++11 -fpermissive -w -g # Shamelessly suppressing all the warni
 LDFLAGS  = -Lcfitsio/lib -lcfitsio 
 PWD     := $(shell pwd)
 
-ioer : testior.cpp 
+ioer : testioer.cpp 
 		$(CC) $? $(CPPINC) $(CPPFLAGS) $(LDFLAGS) -o $@
 
 cfgen : testgenerator.cpp generator.hpp 

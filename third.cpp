@@ -2,80 +2,70 @@
 #include "third.hpp"
 #endif
 #include<pfits.hpp>
-#include<boost/program_options/cmdline.hpp>
-#include<boost/program_options/config.hpp>
-#include<boost/program_options/environment_iterator.hpp>
-#include<boost/program_options/option.hpp>
-#include<boost/program_options/options_description.hpp>
-#include<boost/program_options/parsers.hpp>
-#include<boost/program_options/positional_options.hpp>
-#include<boost/program_options/variables_map.hpp>
-
+#include<unistd.h>
+#include <getopt.h>
 
 using  namespace std;
-namespace po = boost::program_options;
+
+void help() {
+		cout << " ---------- PRF2FITS ---------- " << endl;
+		cout << "	-h Prints help " << endl;
+		cout << "	-o Observatory cfg file " << endl;
+		cout << "	-n Pulsar cfg file " << endl;
+		cout << "	-p Project cfg file " << endl;
+		cout << "	-s Scan cfg file " << endl;
+		cout << "	-a Pulsar ephemeris file " << endl;
+		cout << "	-f Output FITS filename " << endl;
+		cout << "	-i Input prof file " << endl;
+		cout << " ---- Github: @shiningsurya --- " << endl;
+}
 
 int main(int argc, char * argv[]){
-		string observatory, pulsar, observation, project, scan, par; // file io
+		if(argc < 2) {
+				help();
+				exit(0);
+		}
+		string pulsar("pulsar.cfg"), observatory("observatory.cfg"), project("project.cfg"), scan("scan.cfg"), par("par.cfg"); 
 		string input, out;
-		po::variables_map vm;
-		// PO
-		po::options_description desc("Options");
-		desc.add_options()
-		("help,h","Prints help")
-		("bug-in-code","Prints contact info")
-		("observatory,o",po::value<string>(&observatory)->default_value("observatory.cfg")->required(),"Observatory cfg file")
-		("pulsar,n",po::value<string>(&pulsar)->default_value("pulsar.cfg")->required(),"Pulsar cfg file")
-		("project,p",po::value<string>(&project)->default_value("project.cfg")->required(),"Project cfg file")
-		("scan,s",po::value<string>(&scan)->default_value("scan.cfg")->required(),"Scan cfg file")
-		("par,a",po::value<string>(&par),"Pulsar Ephemeris file\n"
-										 "N.B: This is not a required option.")
-		("input",po::value<string>(&input), "Input PROF file\n"
-											   "\tYou can directly give the input prof file as the one and only positional argument here.\n" 
-											   "You dont have to type --input or -i." 
-		 )
-		("out,f",po::value<string>(&out),"FITS file\n"
-										  "\tMake sure that is no FITS with the same name there.\n"
-										 "CFITSIO routines cause error when we create a FITS file \n"
-										 "with the same name as one already there."
-		 )
-		("overload_frequency,w","Forces prf2fits to use the centre frequency\n"
-								"as provided in the cfg files rather than using\n"
-								"top of the subband frequency given in header of prof\n"
-								"This is not the default behavior\n"
-		)
-		;
-		po::positional_options_description p;
-		p.add("input",-1);
-		po::store(po::command_line_parser(argc,argv).options(desc).positional(p).run(), vm);
-		// argument parsing is done..
-		if(vm.count("help") || argc < 2) {
-				cout << desc << endl;
-				return true;
-
+		int parfile = 0, opt;
+		while( (opt = getopt(argc, argv, "h::o:n:p:s:a:f:i:")) != -1) {
+				switch(opt) {
+						case 'h':
+								help();
+								exit(0);
+						case 'n':
+								pulsar.assign(optarg);	
+								break;
+						case 'o':
+								observatory.assign(optarg);
+								break;
+						case 'p':
+								project.assign(optarg);
+								break;
+						case 's':
+								scan.assign(optarg);
+								break;
+						case 'a':
+								parfile = 1;
+								par.assign(optarg);
+								break;
+						case 'f':
+								out.assign(optarg);
+								break;
+						case 'i':
+								input.assign(optarg);
+								break;
+				}
 		}
-		if(vm.count("bug-in-code")){
-				cout << "If you found some bugs in the code\nOr, would like to discuss the code with me.\n" ;
-				cout << "You can reach me via email on :\n" ;
-				cout << "shining [dot] surya [dot] d8 [at] gmail [dot] com\n";
-				cout << "Alternatively, you can raise an issue in Github\n";
-				cout << "Suryrao Bethapudi\n";
-				return true;
-		}
-		if(!vm.count("input")) {
-				cerr << "No input file given\n";
-				cerr << "Exiting...\n";
-				return false;
-		}
-		if(vm.count("overload_frequency")) {
-				OverRideCFreq = true;
-		}
-		else {
-				OverRideCFreq = false;
-		}
-		po::notify(vm); // only raises any errors encountered. 
+		/////// DEBUG
+		/*
+		 *cout << pulsar << endl << observatory << endl << project << endl << scan << endl;
+		 *cout << input << endl << out;
+		 *exit(1);
+		 */
+		/////// DEBUG
 		// Creating a FITS file
-		FITS myfits(vm["input"].as<string>(), pulsar, observatory, project, scan);
+		FITS myfits(input, pulsar, observatory, project, scan);
 		// Now, I will show you a magic
 		/***********************************
 		 * This magic is called OOP trick.
@@ -88,7 +78,7 @@ int main(int argc, char * argv[]){
 		myfits.createFITS(out.c_str());
 		myfits.primaryHeader();
 		myfits.PutHistoryTable();
-		if(vm.count("par")) myfits.PutPar(par);
+		if(parfile) myfits.PutPar(par);
 		myfits.PutSubint();
 		myfits.closeFITS();		
 		return 0;

@@ -1,4 +1,5 @@
 *.log
+ioer
 *.tar.gz
 *.swp
 *.status

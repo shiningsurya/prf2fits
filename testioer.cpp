@@ -15,16 +15,6 @@ int main(int argc, char * argv[]) {
 		io.LoadFile(argv[1]);	
 		// 
 		cout << "Number of parameters read from the file: " << io.getNumberParameters() << endl;
-		cout << "DATA[key1] : " << io["key1"] << endl;	
-
-
-
-
-
-
-
-
-
-
+		io.walkThrough();
 		return 0;
 }
