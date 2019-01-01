@@ -2,36 +2,43 @@
 # PRF2FITS
 SHELL := /bin/bash
 CC =  g++
-CPPINC   = -Icfitsio/include -I. -Iboost/ 
+CPPINC   = -Icfitsio/include -I. 
 CPPFLAGS = -std=c++11 -fpermissive -w -g # Shamelessly suppressing all the warnings so that
 								         # compilaton is quiet 
 # Uncomment these lines and add path to CFITSIO header file 
 # to CPPINC and path to shared CFITSIO library
 # CPPINC += 
 # CPPFLAGS +=
-
 LDFLAGS  = -Lcfitsio/lib -lcfitsio 
 PWD     := $(shell pwd)
+SRC     := Source/
+TST     := Test/
 
-ioer : testioer.cpp 
+ioer : $(SRC)testioer.cpp 
 		$(CC) $? $(CPPINC) $(CPPFLAGS) $(LDFLAGS) -o $@
 
-cfgen : testgenerator.cpp generator.hpp 
-		$(CC) testgenerator.cpp $(CPPINC) $(CPPFLAGS) $(LDFLAGS) -o $@
+cfgen : $(SRC)testgenerator.cpp $(SRC)generator.hpp 
+		$(CC) $(SRC)testgenerator.cpp $(CPPINC) $(CPPFLAGS) $(LDFLAGS) -o $@
 
-doc : doc/manual.tex
-	pdflatex doc/manual.tex --output-directory=doc/
+doc : $(PWD)doc/manual.tex
+	pdflatex $(PWD)doc/manual.tex --output-directory=doc/
 
 clean :
-	-rm -f testio testgen prf2fits cfgen 
+	-rm -f testio testgen prf2fits cfgen ioer
 
-prf2fits : third.cpp pfits.hpp mjder.hpp ioer.hpp 
-	$(CC) third.cpp $(CPPINC) $(CPPFLAGS) $(LDFLAGS) -lboost_program_options -o $@
+test: 
+	-cp prf2fits $(TST)
+	-cd $(TST)
+	-./prf2fits -i test.prof -f testnew.fits
+	md5sum -c fits.md5
+
+prf2fits : 
+	$(CC) $(SRC)third.cpp $(CPPINC) $(CPPFLAGS) $(LDFLAGS) -o $@
 
 all:
 		prf2fits cfgen
 
-mjder: testmjd.cpp mjder.hpp
-	$(CC) testmjd.cpp $(CPPINC) $(CPPFLAGS) $(LDFLAGS) -o $@ 
+mjder: $(SRC)testmjd.cpp $(SRC)mjder.hpp
+	$(CC) $(SRC)testmjd.cpp $(CPPINC) $(CPPFLAGS) $(LDFLAGS) -o $@ 
 
 .PHONY: clean doc

@@ -1,7 +1,7 @@
 #ifndef _THIRD_H
 #include "third.hpp"
 #endif
-#include<pfits.hpp>
+#include<Source/pfits.hpp>
 #include<unistd.h>
 #include <getopt.h>
 

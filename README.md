@@ -2,32 +2,13 @@
 ## Program which converts PROFS to FITS
 
 
-
 ### Installation
 Makes use of `cfitsio` which is bundled with `prf2fits`. 
-
-It also makes use of `boost/spirit/qi` to do parsing. 
-
-The only way to use that functionality of boost right now is to run 
-
-`sudo apt-get install libboost-all-dev` . 
-
-*We want this program to be stand alone, and have no dependencies for which `apt-get` has to be used.*
-
-`Makefile` has been crafted which installs `prf2fits` and `cfgen`. To install CFITSIO, do the following:
-`./configure --prefix=XXXX CFLAGS=-fPIC FFLAGS=-fPIC`
-`make shared && make install && make clean`
-Please note to replace `XXXX` with the root directory (i.e., where you have downloaded the `prf2fits` source files).
-
-You may want to add the path of this directory to your `PATH` environmental variable so that you can use the binaries generated here.
-
-Following is a simple illustration of installing these programs:
-
-`sudo apt-get update && sudo apt-get install libboost-all-dev`
 
 `git clone https://github.com/shiningsurya/prf2fits.git`
 
 *install CFITSIO*
+- `sudo apt-get install libcfitsio3-dev`
 
 `make all`
 
@@ -49,6 +30,6 @@ It will create a `manual.pdf`.
 ### Bugs/Questions/Comments/Suggestions ?
 Suryarao Bethapudi 
 
-You can make an issue in the Github repo.
+You can make an issue in this repo.
 
 

@@ -7,8 +7,8 @@
 //#include<boost/algorithm/string.hpp>
 #include<string>
 #include "fitsio.h"
-#include "ioer.hpp"
-#include "mjder.hpp"
+#include "Source/ioer.hpp"
+#include "Source/mjder.hpp"
 // class IOer;
 class FITS;
 class PROFIO;
